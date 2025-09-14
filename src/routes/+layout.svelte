@@ -107,6 +107,7 @@
 				<a href="/privacy" class="mx-2 text-blue-300 hover:underline">Privacy Policy & Terms</a>
 				<a href="mailto:contact@example.com" class="mx-2 text-blue-300 hover:underline">Contact</a>
 			</nav>
+			<p class="mt-2 text-gray-300">Weather data © <a href="https://www.yr.no" class="underline" target="_blank" rel="noopener">MET Norway / yr.no</a></p>
 		</div>
 	</footer>
 </div>
