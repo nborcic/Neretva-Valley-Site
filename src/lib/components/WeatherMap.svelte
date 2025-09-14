@@ -13,7 +13,7 @@
 	const originalPositions = [
 		// Coastal/Delta towns
 		{ name: 'Ploče', x: 7, y: 100 },
-		{ name: 'Klek', x: 50, y: 100 },
+		{ name: 'Klek', x:35, y: 20 },
 		{ name: 'Komarna', x: 35, y: 75 },
 		{ name: 'Raba', x: 45, y: 70 },
 		{ name: 'Kremena', x: 55, y: 65 },
