@@ -212,5 +212,196 @@ export async function fetchAllWeatherData(useOpenWeather = false, apiKey = null)
 	}
 }
 
+// Fetch detailed weather forecast for Neretva location (for the forecast table)
+export async function fetchNeretvaForecast() {
+	try {
+		// Coordinates for Neretva area (approximate center)
+		const lat = 43.3000;
+		const lon = 17.8000;
+		
+		const response = await fetch(
+			`${YR_NO_BASE_URL}?lat=${lat}&lon=${lon}`,
+			{
+				headers: {
+					'User-Agent': 'Neretva-Weather-App/1.0 (contact@example.com)'
+				}
+			}
+		);
+		
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+		
+		const data = await response.json();
+		const timeSeries = data.properties.timeseries;
+		
+		// Process data into daily forecasts
+		const dailyForecasts = [];
+		const today = new Date();
+		
+		for (let dayOffset = 0; dayOffset < 9; dayOffset++) {
+			const targetDate = new Date(today);
+			targetDate.setDate(today.getDate() + dayOffset);
+			const dateStr = targetDate.toDateString();
+			
+			// Find weather data for this day at different times
+			const nightData = findDataForTime(timeSeries, targetDate, 2);    // 2 AM
+			const morningData = findDataForTime(timeSeries, targetDate, 8);  // 8 AM
+			const afternoonData = findDataForTime(timeSeries, targetDate, 14); // 2 PM
+			const eveningData = findDataForTime(timeSeries, targetDate, 20);  // 8 PM
+			
+			// Get day's temperature range
+			const dayTemps = [];
+			for (let hour = 0; hour < 24; hour++) {
+				const hourData = findDataForTime(timeSeries, targetDate, hour);
+				if (hourData && hourData.instant.details.air_temperature) {
+					dayTemps.push(hourData.instant.details.air_temperature);
+				}
+			}
+			
+			const tempHigh = dayTemps.length > 0 ? Math.round(Math.max(...dayTemps)) : 20;
+			const tempLow = dayTemps.length > 0 ? Math.round(Math.min(...dayTemps)) : 15;
+			
+			// Calculate daily precipitation
+			const precipitation = calculateDayPrecipitation(timeSeries, targetDate);
+			const windSpeed = afternoonData ? 
+				Math.round(afternoonData.instant.details.wind_speed) : 3;
+			
+			const forecast = {
+				date: dayOffset === 0 ? `Today ${formatDate(targetDate)}` : 
+				      dayOffset === 1 ? `Monday ${formatDate(targetDate)}` :
+				      `${formatDayName(targetDate)} ${formatDate(targetDate)}`,
+				night: {
+					icon: getWeatherSymbol(nightData, true),
+					temp: nightData ? Math.round(nightData.instant.details.air_temperature) : tempLow
+				},
+				morning: {
+					icon: getWeatherSymbol(morningData, false),
+					temp: morningData ? Math.round(morningData.instant.details.air_temperature) : tempHigh - 5
+				},
+				afternoon: {
+					icon: getWeatherSymbol(afternoonData, false),
+					temp: afternoonData ? Math.round(afternoonData.instant.details.air_temperature) : tempHigh
+				},
+				evening: {
+					icon: getWeatherSymbol(eveningData, true),
+					temp: eveningData ? Math.round(eveningData.instant.details.air_temperature) : tempHigh - 3
+				},
+				tempHigh,
+				tempLow,
+				precipitation: precipitation > 0 ? `${precipitation} mm` : '0 mm',
+				wind: `${windSpeed} m/s`
+			};
+			
+			dailyForecasts.push(forecast);
+		}
+		
+		return dailyForecasts;
+		
+	} catch (error) {
+		console.error('Error fetching Neretva forecast:', error);
+		// Return fallback data
+		return generateFallbackForecast();
+	}
+}
+
+// Helper function to find weather data for a specific time
+function findDataForTime(timeSeries, date, hour) {
+	const targetTime = new Date(date);
+	targetTime.setHours(hour, 0, 0, 0);
+	
+	// Find closest data point
+	let closest = null;
+	let minDiff = Infinity;
+	
+	for (const entry of timeSeries) {
+		const entryTime = new Date(entry.time);
+		const diff = Math.abs(entryTime - targetTime);
+		
+		if (diff < minDiff) {
+			minDiff = diff;
+			closest = entry.data;
+		}
+	}
+	
+	return closest;
+}
+
+// Get weather symbol from yr.no data
+function getWeatherSymbol(weatherData, isNight = false) {
+	if (!weatherData || !weatherData.next_1_hours) {
+		return isNight ? 'partlycloudy_night' : 'partlycloudy_day';
+	}
+	
+	const symbol = weatherData.next_1_hours.summary?.symbol_code;
+	if (!symbol) {
+		return isNight ? 'partlycloudy_night' : 'partlycloudy_day';
+	}
+	
+	// Adjust for night/day
+	if (isNight) {
+		return symbol.replace('_day', '_night');
+	} else {
+		return symbol.replace('_night', '_day');
+	}
+}
+
+// Calculate precipitation for a day
+function calculateDayPrecipitation(timeSeries, date) {
+	let totalPrecip = 0;
+	const startOfDay = new Date(date);
+	startOfDay.setHours(0, 0, 0, 0);
+	const endOfDay = new Date(date);
+	endOfDay.setHours(23, 59, 59, 999);
+	
+	for (const entry of timeSeries) {
+		const entryTime = new Date(entry.time);
+		if (entryTime >= startOfDay && entryTime <= endOfDay) {
+			const precip = entry.data.next_1_hours?.details?.precipitation_amount || 0;
+			totalPrecip += precip;
+		}
+	}
+	
+	return Math.round(totalPrecip * 10) / 10; // Round to 1 decimal
+}
+
+// Format date for display
+function formatDate(date) {
+	const day = date.getDate();
+	const month = date.toLocaleString('en', { month: 'short' });
+	return `${day} ${month}.`;
+}
+
+// Format day name
+function formatDayName(date) {
+	return date.toLocaleString('en', { weekday: 'long' });
+}
+
+// Generate fallback forecast data
+function generateFallbackForecast() {
+	const fallbackData = [];
+	const today = new Date();
+	
+	for (let i = 0; i < 9; i++) {
+		const date = new Date(today);
+		date.setDate(today.getDate() + i);
+		
+		fallbackData.push({
+			date: i === 0 ? `Today ${formatDate(date)}` : 
+			      `${formatDayName(date)} ${formatDate(date)}`,
+			night: { icon: 'partlycloudy_night', temp: 15 + Math.floor(Math.random() * 5) },
+			morning: { icon: 'clearsky_day', temp: 18 + Math.floor(Math.random() * 5) },
+			afternoon: { icon: 'partlycloudy_day', temp: 25 + Math.floor(Math.random() * 5) },
+			evening: { icon: 'partlycloudy_night', temp: 20 + Math.floor(Math.random() * 5) },
+			tempHigh: 25 + Math.floor(Math.random() * 8),
+			tempLow: 15 + Math.floor(Math.random() * 5),
+			precipitation: Math.random() > 0.7 ? `${Math.floor(Math.random() * 5)} mm` : '0 mm',
+			wind: `${2 + Math.floor(Math.random() * 4)} m/s`
+		});
+	}
+	
+	return fallbackData;
+}
+
 // Export the locations for use in other components
 export { NERETVA_LOCATIONS };

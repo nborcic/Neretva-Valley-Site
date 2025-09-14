@@ -1,5 +1,6 @@
 <script lang="ts">
 	import WeatherIcon from '$lib/components/WeatherIcon.svelte';
+	import WeatherForecastTable from '$lib/components/WeatherForecastTable.svelte';
 	import mapImg from '$lib/assets/neretva-map.jpg';
 	import header1 from '$lib/assets/WhatsApp Image 2025-09-13 at 09.41.16.jpeg';
 	import img1 from '$lib/assets/WhatsApp Image 2025-09-13 at 09.41.16 (1).jpeg';
@@ -59,6 +60,11 @@
 		<div class="absolute inset-0 flex items-center px-4">
 			<h1 class="text-2xl font-extrabold tracking-tight text-gray-900">Neretva Weather</h1>
 		</div>
+	</section>
+
+	<!-- Neretva Weather Forecast Table -->
+	<section class="mb-6">
+		<WeatherForecastTable location="Neretva" />
 	</section>
 
 	<!-- Main layout: cards + sidebar -->
