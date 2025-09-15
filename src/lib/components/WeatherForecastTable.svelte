@@ -1,17 +1,17 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import WeatherIcon from '$lib/components/WeatherIcon.svelte';
 	import { fetchNeretvaForecast } from '$lib/services/weatherService.js';
 
-	export let location = 'Neretva';
-	export let forecastData = [];
+	export let location: string = 'Neretva';
+	export let forecastData: any[] = [];
 
-	let weatherData = [];
-	let loading = true;
-	let error = null;
+	let weatherData: any[] = [];
+	let loading: boolean = true;
+	let error: string | null = null;
 	
 	// Tab state
-	let activeTab = 'table';
+	let activeTab: 'table' | 'graph' = 'table';
 
 	// Load weather data on mount
 	onMount(async () => {
@@ -29,7 +29,7 @@
 		}
 	});
 
-	function generateFallbackData() {
+	function generateFallbackData(): any[] {
 		const fallbackData = [];
 		const today = new Date();
 		
@@ -54,17 +54,17 @@
 		return fallbackData;
 	}
 
-	function formatDate(date) {
+	function formatDate(date: Date): string {
 		const day = date.getDate();
 		const month = date.toLocaleString('en', { month: 'short' });
 		return `${day} ${month}.`;
 	}
 
-	function formatDayName(date) {
+	function formatDayName(date: Date): string {
 		return date.toLocaleString('en', { weekday: 'long' });
 	}
 
-	async function refreshForecast() {
+	async function refreshForecast(): Promise<void> {
 		try {
 			loading = true;
 			error = null;
@@ -79,7 +79,7 @@
 		}
 	}
 
-	function switchTab(tab) {
+	function switchTab(tab: 'table' | 'graph'): void {
 		activeTab = tab;
 	}
 </script>
