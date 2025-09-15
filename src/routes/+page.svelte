@@ -1,5 +1,5 @@
 <script lang="ts">
-	import WeatherIcon from '$lib/components/WeatherIcon.svelte';
+	import WeatherForecastTable from '$lib/components/WeatherForecastTable.svelte';
 	import mapImg from '$lib/assets/neretva-map.jpg';
 	import header1 from '$lib/assets/WhatsApp Image 2025-09-13 at 09.41.16.jpeg';
 	import img1 from '$lib/assets/WhatsApp Image 2025-09-13 at 09.41.16 (1).jpeg';
@@ -47,6 +47,19 @@
 			}
 		}
 	}
+
+	function getWeatherEmoji(symbol: string): string {
+		if (symbol.includes('clearsky') || symbol === 'sun') return '☀️';
+		if (symbol.includes('fair')) return '🌤️';
+		if (symbol.includes('partlycloudy')) return '⛅';
+		if (symbol.includes('cloud')) return '☁️';
+		if (symbol.includes('fog')) return '🌫️';
+		if (symbol.includes('snow')) return '❄️';
+		if (symbol.includes('sleet')) return '🌨️';
+		if (symbol.includes('rain') || symbol.includes('showers')) return '🌧️';
+		if (symbol.includes('thunder')) return '⛈️';
+		return '☁️';
+	}
 </script>
 
 <svelte:window on:load={onMountClient} />
@@ -59,6 +72,40 @@
 		<div class="absolute inset-0 flex items-center px-4">
 			<h1 class="text-2xl font-extrabold tracking-tight text-gray-900">Neretva Weather</h1>
 		</div>
+	</section>
+
+	<!-- Embedded yr.no PDF Forecast (bottom 50% only) -->
+	<section class="mb-6">
+		<div class="relative overflow-hidden rounded-lg bg-white shadow-md" style="height: 400px;">
+			<div class="absolute inset-0" style="top: -400px;">
+				<iframe
+					src="https://www.yr.no/en/print/forecast/2-3194528/Croatia/Neretva"
+					class="h-full w-full border-0"
+					style="height: 800px; width: 100%;"
+					title="Neretva Weather Forecast from yr.no"
+					loading="lazy"
+				></iframe>
+			</div>
+			<!-- Overlay header -->
+			<div class="absolute top-0 left-0 right-0 bg-gradient-to-b from-blue-600 to-blue-500 px-4 py-2 text-white shadow-sm">
+				<div class="flex items-center justify-between">
+					<h3 class="text-sm font-medium">Live Forecast from yr.no</h3>
+					<a
+						href="https://www.yr.no/en/print/forecast/2-3194528/Croatia/Neretva"
+						target="_blank"
+						rel="noopener"
+						class="text-xs text-blue-100 hover:text-white hover:underline"
+					>
+						View Full Forecast →
+					</a>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Neretva Weather Forecast Table -->
+	<section class="mb-6">
+		<WeatherForecastTable location="Neretva" />
 	</section>
 
 	<!-- Main layout: cards + sidebar -->
@@ -78,7 +125,7 @@
 						<!-- Current row -->
 						<div class="mb-3 flex items-center justify-between gap-3">
 							<div class="flex items-center gap-2">
-								<WeatherIcon symbol={t.current.symbol} size={28} />
+								<div class="text-3xl">{getWeatherEmoji(t.current.symbol)}</div>
 								<div class="text-2xl font-semibold text-gray-900">{formatTemp(t.current.tempC)}</div>
 							</div>
 							<div class="text-xs text-gray-600">
@@ -113,7 +160,7 @@
 								{#each t.hours.slice(0, 8) as h}
 									<div class="min-w-14 rounded border border-dotted border-gray-300 px-2 py-1 text-center">
 										<div class="text-[10px] text-gray-500">{h.time}</div>
-										<div class="mx-auto my-0.5 flex justify-center"><WeatherIcon symbol={h.symbol} size={18} /></div>
+										<div class="mx-auto my-0.5 flex justify-center text-lg">{getWeatherEmoji(h.symbol)}</div>
 										<div class="text-sm font-medium text-gray-900">{h.tempC}°</div>
 									</div>
 								{/each}
@@ -125,7 +172,7 @@
 							{#each t.days as d}
 								<div class="rounded border border-dotted border-gray-300 p-2 text-center">
 									<div class="text-[10px] text-gray-500">{d.date}</div>
-									<div class="my-0.5 flex justify-center"><WeatherIcon symbol={d.symbol} size={20} /></div>
+									<div class="my-0.5 flex justify-center text-xl">{getWeatherEmoji(d.symbol)}</div>
 									<div class="text-xs text-gray-700">{d.lowC}° / <span class="font-semibold text-gray-900">{d.highC}°</span></div>
 									<div class="text-[11px] text-gray-600">{d.text}</div>
 								</div>
