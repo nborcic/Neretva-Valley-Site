@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import WeatherIcon from '$lib/components/WeatherIcon.svelte';
 	import { fetchNeretvaForecast } from '$lib/services/weatherService.js';
 
 	export let location: string = 'Neretva';
@@ -82,6 +81,19 @@
 	function switchTab(tab: 'table' | 'graph'): void {
 		activeTab = tab;
 	}
+
+	function getWeatherEmoji(symbol: string): string {
+		if (symbol.includes('clearsky') || symbol === 'sun') return '☀️';
+		if (symbol.includes('fair')) return '🌤️';
+		if (symbol.includes('partlycloudy')) return '⛅';
+		if (symbol.includes('cloud')) return '☁️';
+		if (symbol.includes('fog')) return '🌫️';
+		if (symbol.includes('snow')) return '❄️';
+		if (symbol.includes('sleet')) return '🌨️';
+		if (symbol.includes('rain') || symbol.includes('showers')) return '🌧️';
+		if (symbol.includes('thunder')) return '⛈️';
+		return '☁️';
+	}
 </script>
 
 <div class="w-full rounded-lg bg-white shadow-md">
@@ -151,37 +163,37 @@
 									{day.date}
 								</td>
 								
-								<!-- Night -->
-								<td class="px-3 py-4 text-center">
-									<div class="flex flex-col items-center gap-1">
-										<WeatherIcon symbol={day.night.icon} size={32} />
-										<span class="text-sm text-gray-600">{day.night.temp}°</span>
-									</div>
-								</td>
+							<!-- Night -->
+							<td class="px-3 py-4 text-center">
+								<div class="flex flex-col items-center gap-1">
+									<div class="text-2xl">{getWeatherEmoji(day.night.icon)}</div>
+									<span class="text-sm text-gray-600">{day.night.temp}°</span>
+								</div>
+							</td>
 								
-								<!-- Morning -->
-								<td class="px-3 py-4 text-center">
-									<div class="flex flex-col items-center gap-1">
-										<WeatherIcon symbol={day.morning.icon} size={32} />
-										<span class="text-sm text-gray-600">{day.morning.temp}°</span>
-									</div>
-								</td>
+							<!-- Morning -->
+							<td class="px-3 py-4 text-center">
+								<div class="flex flex-col items-center gap-1">
+									<div class="text-2xl">{getWeatherEmoji(day.morning.icon)}</div>
+									<span class="text-sm text-gray-600">{day.morning.temp}°</span>
+								</div>
+							</td>
 								
-								<!-- Afternoon -->
-								<td class="px-3 py-4 text-center">
-									<div class="flex flex-col items-center gap-1">
-										<WeatherIcon symbol={day.afternoon.icon} size={32} />
-										<span class="text-sm text-gray-600">{day.afternoon.temp}°</span>
-									</div>
-								</td>
+							<!-- Afternoon -->
+							<td class="px-3 py-4 text-center">
+								<div class="flex flex-col items-center gap-1">
+									<div class="text-2xl">{getWeatherEmoji(day.afternoon.icon)}</div>
+									<span class="text-sm text-gray-600">{day.afternoon.temp}°</span>
+								</div>
+							</td>
 								
-								<!-- Evening -->
-								<td class="px-3 py-4 text-center">
-									<div class="flex flex-col items-center gap-1">
-										<WeatherIcon symbol={day.evening.icon} size={32} />
-										<span class="text-sm text-gray-600">{day.evening.temp}°</span>
-									</div>
-								</td>
+							<!-- Evening -->
+							<td class="px-3 py-4 text-center">
+								<div class="flex flex-col items-center gap-1">
+									<div class="text-2xl">{getWeatherEmoji(day.evening.icon)}</div>
+									<span class="text-sm text-gray-600">{day.evening.temp}°</span>
+								</div>
+							</td>
 								
 								<!-- Temperature range -->
 								<td class="px-4 py-4 text-center">
