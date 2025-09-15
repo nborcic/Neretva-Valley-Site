@@ -203,7 +203,7 @@
 	function getWeatherSymbol(weather) {
 		switch (weather) {
 			case 'sunny':
-				return 'image:///Sunny.gif';
+				return 'circle';
 			case 'partly-cloudy':
 				return 'circle';
 			case 'cloudy':
@@ -218,7 +218,7 @@
 	function getWeatherColor(weather) {
 		switch (weather) {
 			case 'sunny':
-				return 'transparent'; // Use icon instead of color
+				return '#fbbf24';
 			case 'partly-cloudy':
 				return '#94a3b8';
 			case 'cloudy':
@@ -248,14 +248,10 @@
 
 <div class="w-full rounded-lg bg-white p-4 shadow-md">
 	<div class="relative h-96 w-full">
-		<!-- Background map image -->
-		<img
-			src="/neretva_map_maps.jpg"
-			class="absolute inset-0 z-[1] h-full w-full rounded-lg object-cover opacity-60"
-			alt="Neretva River Delta Map"
-			on:error={() => console.log('Image failed to load')}
-			on:load={() => console.log('Image loaded successfully')}
-		/>
+		<!-- Background map placeholder -->
+		<div class="absolute inset-0 z-[1] h-full w-full rounded-lg bg-gradient-to-br from-blue-300 to-green-300 opacity-60 flex items-center justify-center">
+			<p class="text-blue-800 font-semibold opacity-80">Map Background</p>
+		</div>
 		<!-- Map attribution -->
 		<div
 			class="absolute right-2 bottom-2 z-[5] rounded bg-white/80 px-2 py-1 text-xs text-gray-600"

@@ -1,11 +1,5 @@
 <script lang="ts">
 	import WeatherForecastTable from '$lib/components/WeatherForecastTable.svelte';
-	import mapImg from '$lib/assets/neretva-map.jpg';
-	import header1 from '$lib/assets/WhatsApp Image 2025-09-13 at 09.41.16.jpeg';
-	import img1 from '$lib/assets/WhatsApp Image 2025-09-13 at 09.41.16 (1).jpeg';
-	import img2 from '$lib/assets/WhatsApp Image 2025-09-13 at 09.41.16 (2).jpeg';
-	import img3 from '$lib/assets/WhatsApp Image 2025-09-13 at 09.41.16 (3).jpeg';
-	import img4 from '$lib/assets/WhatsApp Image 2025-09-13 at 09.41.16 (4).jpeg';
 
 	export let data: {
 		towns: Array<{
@@ -19,9 +13,6 @@
 		}>;
 	};
 
-	const collageImages = [img1, img2, img3, img4];
-	let collageIndex = 0;
-	let reduceMotion = false;
 
 	function formatKmh(v: number) { return `${v} km/h`; }
 	function formatTemp(v: number) { return Number.isFinite(v) ? `${v}°C` : '—'; }
@@ -38,15 +29,6 @@
 		return d.toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' });
 	}
 
-	function onMountClient() {
-		if (typeof window !== 'undefined') {
-			reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-			if (!reduceMotion) {
-				const id = setInterval(() => { collageIndex = (collageIndex + 1) % collageImages.length; }, 6000);
-				return () => clearInterval(id);
-			}
-		}
-	}
 
 	function getWeatherEmoji(symbol: string): string {
 		if (symbol.includes('clearsky') || symbol === 'sun') return '☀️';
@@ -62,16 +44,11 @@
 	}
 </script>
 
-<svelte:window on:load={onMountClient} />
 
 <div class="flex flex-col gap-6 bg-gray-50 [background-image:radial-gradient(rgba(0,0,0,0.03)_1px,transparent_1px)] [background-size:8px_8px] rounded-lg p-4">
 	<!-- Header banner -->
-	<section class="relative overflow-hidden rounded-lg shadow-sm">
-		<img src={header1} alt="Novinski header" class="h-36 w-full object-cover opacity-80" />
-		<div class="absolute inset-0 bg-white/30"></div>
-		<div class="absolute inset-0 flex items-center px-4">
-			<h1 class="text-2xl font-extrabold tracking-tight text-gray-900">Neretva Weather</h1>
-		</div>
+	<section class="bg-blue-600 text-white p-6 rounded-lg shadow-sm">
+		<h1 class="text-2xl font-extrabold tracking-tight">Neretva Weather</h1>
 	</section>
 
 	<!-- Embedded yr.no PDF Forecast (bottom 50% only) -->
@@ -195,7 +172,9 @@
 		<aside class="flex flex-col gap-4">
 			<div class="overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-200">
 				<div class="p-3 text-sm font-semibold">Karta</div>
-				<img src={mapImg} alt="Karta Neretve" class="h-56 w-full object-cover" />
+				<div class="h-56 w-full bg-gradient-to-b from-blue-200 to-blue-400 flex items-center justify-center">
+					<p class="text-blue-800 font-medium">Map placeholder</p>
+				</div>
 			</div>
 
 			<div class="overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-200">
@@ -207,10 +186,8 @@
 
 			<div class="overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-200">
 				<div class="p-3 text-sm font-semibold">Fotokolaž</div>
-				<div class="group relative h-56 w-full">
-					{#each collageImages as img, i}
-						<img src={img} alt="Neretva fotografija" class={`absolute inset-0 h-full w-full object-cover transition-opacity ${reduceMotion ? 'duration-0' : 'duration-700'} opacity-0`} style={`opacity:${i===collageIndex?1:0}`}/>
-					{/each}
+				<div class="h-56 w-full bg-gradient-to-br from-green-200 to-blue-300 flex items-center justify-center">
+					<p class="text-green-800 font-medium">Photo gallery placeholder</p>
 				</div>
 			</div>
 		</aside>
