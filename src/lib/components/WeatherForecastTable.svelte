@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import WeatherIcon from './WeatherIcon.svelte';
+	import WeatherIcon from '$lib/components/WeatherIcon.svelte';
 	import { fetchNeretvaForecast } from '$lib/services/weatherService.js';
 
 	export let location = 'Neretva';
