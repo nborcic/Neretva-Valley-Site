@@ -62,6 +62,35 @@
 		</div>
 	</section>
 
+	<!-- Embedded yr.no PDF Forecast (bottom 50% only) -->
+	<section class="mb-6">
+		<div class="relative overflow-hidden rounded-lg bg-white shadow-md" style="height: 400px;">
+			<div class="absolute inset-0" style="top: -400px;">
+				<iframe
+					src="https://www.yr.no/en/print/forecast/2-3194528/Croatia/Neretva"
+					class="h-full w-full border-0"
+					style="height: 800px; width: 100%;"
+					title="Neretva Weather Forecast from yr.no"
+					loading="lazy"
+				></iframe>
+			</div>
+			<!-- Overlay header -->
+			<div class="absolute top-0 left-0 right-0 bg-gradient-to-b from-blue-600 to-blue-500 px-4 py-2 text-white shadow-sm">
+				<div class="flex items-center justify-between">
+					<h3 class="text-sm font-medium">Live Forecast from yr.no</h3>
+					<a
+						href="https://www.yr.no/en/print/forecast/2-3194528/Croatia/Neretva"
+						target="_blank"
+						rel="noopener"
+						class="text-xs text-blue-100 hover:text-white hover:underline"
+					>
+						View Full Forecast →
+					</a>
+				</div>
+			</div>
+		</div>
+	</section>
+
 	<!-- Neretva Weather Forecast Table -->
 	<section class="mb-6">
 		<WeatherForecastTable location="Neretva" />
