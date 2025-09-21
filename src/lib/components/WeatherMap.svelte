@@ -12,43 +12,15 @@
 	// Original hardcoded positions for the map display
 	const originalPositions = [
 		// Coastal/Delta towns
-		{ name: 'Ploče', x: 7, y: 100 },
-		{ name: 'Klek', x:35, y: 20 },
-		{ name: 'Komarna', x: 35, y: 75 },
-		{ name: 'Raba', x: 45, y: 70 },
-		{ name: 'Kremena', x: 55, y: 65 },
-		{ name: 'Duba', x: 65, y: 60 },
-		{ name: 'Tuštevac', x: 70, y: 55 },
-		{ name: 'Mihalj', x: 75, y: 50 },
-		{ name: 'Otok', x: 80, y: 45 },
-		{ name: 'Trn', x: 85, y: 40 },
+		{ name: 'Ploče', x: 14, y: 100 },
 		{ name: 'Blace', x: 80, y: 35 },
-		{ name: 'Pržinovac', x: 75, y: 30 },
-		{ name: 'Ušće', x: 70, y: 25 },
 		{ name: 'Opuzen', x: 65, y: 20 },
+		{ name: 'Duba', x: 65, y: 60 },
 		{ name: 'Komin', x: 60, y: 15 },
-		{ name: 'Rogotin', x: 55, y: 10 },
-
-		// Inland towns
-		{ name: 'Metković', x: 70, y: 50 },
-		{ name: 'Kula Norinska', x: 75, y: 45 },
 		{ name: 'Krvavac', x: 80, y: 40 },
-		{ name: 'Buk Vlaka', x: 85, y: 35 },
+		{ name: 'Kula Norinska', x: 75, y: 45 },
 		{ name: 'Vlaka', x: 80, y: 30 },
-		{ name: 'Podgradina', x: 75, y: 25 },
-		{ name: 'Plodine', x: 70, y: 20 },
-		{ name: 'Mlinište', x: 65, y: 15 },
-		{ name: 'Mislina', x: 60, y: 10 },
-		{ name: 'Slivno Ravno', x: 55, y: 5 },
-		{ name: 'Zavala', x: 50, y: 0 },
-
-		// Upstream towns
-		{ name: 'Šarić Struga', x: 90, y: 60 },
-		{ name: 'Banja', x: 95, y: 55 },
-		{ name: 'Strimen', x: 90, y: 50 },
-		{ name: 'Desne', x: 85, y: 45 },
-		{ name: 'Podrujnica', x: 80, y: 40 },
-		{ name: 'Momići', x: 75, y: 35 }
+		{ name: 'Mlinište', x: 65, y: 15 }
 	];
 
 	// Function to get position for a location
@@ -95,7 +67,6 @@
 		const option = {
 			backgroundColor: 'transparent',
 			title: {
-				text: 'Neretva River Delta Weather',
 				left: 'center',
 				top: 20,
 				textStyle: {
@@ -105,8 +76,8 @@
 				}
 			},
 			grid: {
-				left: '5%',
-				right: '5%',
+				left: '0%',
+				right: '0%',
 				top: '15%',
 				bottom: '10%'
 			},
@@ -135,7 +106,7 @@
 						symbol: getWeatherSymbol(city.weather),
 						itemStyle: {
 							color: getWeatherColor(city.weather),
-							opacity: 0.8
+							opacity: 1
 						}
 					})),
 					label: {
@@ -151,7 +122,7 @@
 								color: '#1e40af'
 							},
 							temp: {
-								fontSize: 8,
+								fontSize: 7,
 								color: '#374151'
 							}
 						}
@@ -207,7 +178,7 @@
 			case 'partly-cloudy':
 				return 'circle';
 			case 'cloudy':
-				return 'circle';
+				return 'image://Cloudy.gif';
 			case 'rainy':
 				return 'circle';
 			default:
@@ -222,7 +193,7 @@
 			case 'partly-cloudy':
 				return '#94a3b8';
 			case 'cloudy':
-				return '#64748b';
+				return 'image://Cloudy.gif'; // Use icon instead of color
 			case 'rainy':
 				return '#3b82f6';
 			default:
@@ -246,7 +217,7 @@
 	}
 </script>
 
-<div class="w-full rounded-lg bg-white p-4 shadow-md">
+<div class="w-[100%] rounded-lg bg-white p-4 shadow-md">
 	<div class="relative h-96 w-full">
 		<!-- Background map image -->
 		<img

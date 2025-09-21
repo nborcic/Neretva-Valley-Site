@@ -1,0 +1,49 @@
+# Weather Service for AI/LLMs
+
+This directory contains AI-optimized documentation for the Neretva Valley Weather Service.
+
+## Available Documentation Files
+
+### Root Level Files
+- `/llms-full.txt` - Complete weather service documentation with detailed examples
+- `/llms-medium.txt` - Compressed documentation for medium context windows (8k-16k tokens)
+- `/llms-small.txt` - Highly compressed documentation for small context windows (4k-8k tokens)
+
+### Function Documentation
+- `/functions/llms.txt` - Core function documentation
+- `/functions/llms-small.txt` - Compact function reference
+
+### API Documentation
+- `/api/llms.txt` - External API integration details
+- `/api/llms-small.txt` - Quick API reference
+
+## Quick Start
+
+The weather service provides real-time weather data for 10 Neretva Valley locations:
+- Ploče (coastal)
+- Blace (delta)  
+- Opuzen (delta)
+- Duba (river)
+- Kremena (river)
+- Komin (delta)
+- Krvavac (inland)
+- Kula Norinska (inland)
+- Vlaka (delta)
+- Mlinište (delta)
+
+## Main Functions
+
+- `fetchAllWeatherData(useOpenWeather, apiKey)` - Get weather for all locations
+- `fetchNeretvaForecast()` - Get 9-day forecast
+- `fetchAllWeatherDataAI()` - AI-optimized version (recommended)
+
+## AI-Optimized Features
+
+- Intelligent caching (10-minute TTL)
+- Parallel API calls
+- Compact data structures
+- Error resilience
+- Memory optimization
+
+For complete documentation, see: /llms-full.txt
+For quick reference, see: /llms-small.txt

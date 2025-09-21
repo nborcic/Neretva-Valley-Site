@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-/* ECharts tooltip styling with Tailwind */
+/* ECharts tooltip styling */
 :global(.echarts-tooltip) {
 	@apply bg-white border border-gray-200 rounded-lg shadow-lg;
 }

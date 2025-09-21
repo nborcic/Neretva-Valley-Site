@@ -17,7 +17,8 @@
 </svelte:head>
 
 <div class="flex min-h-screen flex-col bg-gray-100">
-	<header class="bg-blue-600 p-4 text-white shadow-md">
+	<!--header title -->
+	<header class="bg-blue-600 p-3 text-white shadow-md">
 		<div class="container mx-auto flex items-center justify-between">
 			<span class="flex items-center gap-2">
 				<h1 class="text-3xl font-bold underline hover:text-blue-400"><a href="/"> Neretva</a></h1>
@@ -36,8 +37,8 @@
 		</div>
 	</header>
 
-	<main class="container mx-auto grid flex-grow grid-cols-1 gap-4 p-4 md:grid-cols-4">
-		<aside class="rounded-lg bg-white p-6 shadow-md md:col-span-1">
+	<main class=" mx-auto flex gap-4 p-4">
+		<aside class=" w-[20%] rounded-lg bg-white p-6 shadow-md md:col-span-1">
 			<!-- Left Sidebar Ad Slot -->
 			<div class="mt-6">
 				<h3 class="mb-2 text-center text-lg font-semibold">Ovdje može biti vaša reklama</h3>
@@ -66,11 +67,11 @@
 				});
 			</script>
 		</aside>
-		<div class="rounded-lg bg-white p-6 shadow-md md:col-span-2">
+		<div class=" h-100vh w-[80%] rounded-lg bg-white p-6 shadow-md md:col-span-2">
 			<slot />
 		</div>
-		<aside class="rounded-lg bg-white p-6 shadow-md md:col-span-1">
-			<!-- Sidebar Ad Slot -->
+		<aside class=" w-[20%] rounded-lg bg-white p-6 shadow-md md:col-span-1">
+			<!-- Sidebar Ad Slot Right -->
 			<div class="mt-6">
 				<h3 class="mb-2 text-center text-lg font-semibold">Ovdje može biti vaša reklama</h3>
 			</div>
@@ -86,7 +87,6 @@
 				></ins>
 			</div>
 			<script>
-				import { onMount } from 'svelte';
 				onMount(() => {
 					if (typeof window !== 'undefined' && window.adsbygoogle) {
 						try {
@@ -104,8 +104,19 @@
 		<div class="container mx-auto text-center text-sm">
 			<p>&copy; 2025 Neretva Valley Weather. All rights reserved.</p>
 			<nav class="mt-2">
-				<a href="/privacy" class="mx-2 text-blue-300 hover:underline">Privacy Policy & Terms</a>
+				Weather data from
+				<a href="https://www.met.no/en" class="text-blue-300 hover:underline">MET Norway</a> /
+				<a href="https://www.yr.no/" class="text-blue-300 hover:underline">Yr</a>,
+				<a
+					href="https://creativecommons.org/licenses/by/4.0/"
+					class="text-blue-300 hover:underline"
+				>
+					CC BY 4.0
+				</a>. Changes may have been made.
+				<a href="https://developer.yr.no/" class="text-blue-300 hover:underline">Learn more</a>
+				<br />
 				<a href="mailto:contact@example.com" class="mx-2 text-blue-300 hover:underline">Contact</a>
+				<p class="text-sm opacity-10">Built with ❤️ for the Neretva</p>
 			</nav>
 		</div>
 	</footer>
