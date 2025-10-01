@@ -9,18 +9,18 @@
 	let loading = true;
 	let error = null;
 
-	// Original hardcoded positions for the map display
+	// Accurate positions based on real coordinates for the map display
 	const originalPositions = [
-		// Coastal/Delta towns
-		{ name: 'Ploče', x: 14, y: 100 },
-		{ name: 'Blace', x: 80, y: 35 },
-		{ name: 'Opuzen', x: 65, y: 20 },
-		{ name: 'Duba', x: 65, y: 60 },
-		{ name: 'Komin', x: 60, y: 15 },
-		{ name: 'Krvavac', x: 80, y: 40 },
-		{ name: 'Kula Norinska', x: 75, y: 45 },
-		{ name: 'Vlaka', x: 80, y: 30 },
-		{ name: 'Mlinište', x: 65, y: 15 }
+		// Calculated from lat/lon coordinates to match actual geographic positions
+		{ name: 'Ploče', x: 0, y: 100 }, // Coastal port city, southwest
+		{ name: 'Blace', x: 72, y: 0 }, // Northern inland area
+		{ name: 'Opuzen', x: 93, y: 38 }, // Eastern middle region
+		{ name: 'Duba', x: 37, y: 38 }, // Central western area
+		{ name: 'Komin', x: 100, y: 51 }, // Far eastern region
+		{ name: 'Krvavac', x: 65, y: 0 }, // Northern central area
+		{ name: 'Kula Norinska', x: 58, y: 13 }, // North central, slightly south
+		{ name: 'Vlaka', x: 79, y: 0 }, // Northern eastern area
+		{ name: 'Mlinište', x: 100, y: 38 } // Far eastern region
 	];
 
 	// Function to get position for a location
