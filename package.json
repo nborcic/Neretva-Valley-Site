@@ -37,7 +37,7 @@
 		"vitest-browser-svelte": "^0.1.0"
 	},
 	"dependencies": {
-		"echarts": "^6.0.0",
+		"leaflet": "^1.9.4",
 		"svelte-i18n": "^4.0.1"
 	}
 }

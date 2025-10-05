@@ -1,6 +1,10 @@
 @import 'tailwindcss';
 
-/* ECharts tooltip styling */
-:global(.echarts-tooltip) {
-	@apply bg-white border border-gray-200 rounded-lg shadow-lg;
+/* Leaflet marker styling */
+:global(.weather-marker) {
+	transition: transform 0.2s ease;
+}
+
+:global(.weather-marker:hover) {
+	transform: scale(1.1);
 }

@@ -12,19 +12,36 @@ const API_HEADERS = {
 // Coordinates for Neretva River delta locations
 const NERETVA_LOCATIONS = [
 	{ name: 'Ploče', lat: 43.0561, lon: 17.4333 },
-	{ name: 'Blace', lat: 43.4500, lon: 17.9500 },
-	{ name: 'Opuzen', lat: 43.3000, lon: 18.1000 },
-	{ name: 'Duba', lat: 43.3000, lon: 17.7000 },
-	{ name: 'Komin', lat: 43.2500, lon: 18.1500 },
-	{ name: 'Krvavac', lat: 43.4500, lon: 17.9000 },
-	{ name: 'Kula Norinska', lat: 43.4000, lon: 17.8500 },
-	{ name: 'Vlaka', lat: 43.4500, lon: 18.0000 },
-	{ name: 'Mlinište', lat: 43.3000, lon: 18.1500 }
+	{ name: 'Blace', lat: 43.45, lon: 17.95 },
+	{ name: 'Opuzen', lat: 43.3, lon: 18.1 },
+	{ name: 'Duba', lat: 43.3, lon: 17.7 },
+	{ name: 'Komin', lat: 43.25, lon: 18.15 },
+	{ name: 'Krvavac', lat: 43.45, lon: 17.9 },
+	{ name: 'Kula Norinska', lat: 43.4, lon: 17.85 },
+	{ name: 'Vlaka', lat: 43.45, lon: 18.0 },
+	{ name: 'Mlinište', lat: 43.3, lon: 18.15 }
 ];
 
 // Convert wind direction from degrees to compass direction
 function getWindDirection(degrees) {
-	const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+	const directions = [
+		'N',
+		'NNE',
+		'NE',
+		'ENE',
+		'E',
+		'ESE',
+		'SE',
+		'SSE',
+		'S',
+		'SSW',
+		'SW',
+		'WSW',
+		'W',
+		'WNW',
+		'NW',
+		'NNW'
+	];
 	const index = Math.round(degrees / 22.5) % 16;
 	return directions[index];
 }
@@ -38,18 +55,18 @@ function msToKnots(ms) {
 function getWeatherCondition(weatherCode) {
 	// yr.no weather codes mapping
 	const weatherMap = {
-		'clearsky_day': 'sunny',
-		'clearsky_night': 'sunny',
-		'fair_day': 'sunny',
-		'fair_night': 'sunny',
-		'partlycloudy_day': 'partly-cloudy',
-		'partlycloudy_night': 'partly-cloudy',
-		'cloudy': 'cloudy',
-		'rainshowers_day': 'rainy',
-		'rainshowers_night': 'rainy',
-		'rain': 'rainy',
-		'lightrain': 'rainy',
-		'heavyrain': 'rainy'
+		clearsky_day: 'sunny',
+		clearsky_night: 'sunny',
+		fair_day: 'sunny',
+		fair_night: 'sunny',
+		partlycloudy_day: 'partly-cloudy',
+		partlycloudy_night: 'partly-cloudy',
+		cloudy: 'cloudy',
+		rainshowers_day: 'rainy',
+		rainshowers_night: 'rainy',
+		rain: 'rainy',
+		lightrain: 'rainy',
+		heavyrain: 'rainy'
 	};
 	return weatherMap[weatherCode] || 'partly-cloudy';
 }
@@ -71,10 +88,9 @@ function createFallbackWeatherData(location) {
 // Fetch weather data from yr.no API
 async function fetchYrNoWeather(location) {
 	try {
-		const response = await fetch(
-			`${YR_NO_BASE_URL}?lat=${location.lat}&lon=${location.lon}`,
-			{ headers: API_HEADERS }
-		);
+		const response = await fetch(`${YR_NO_BASE_URL}?lat=${location.lat}&lon=${location.lon}`, {
+			headers: API_HEADERS
+		});
 
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
@@ -85,11 +101,18 @@ async function fetchYrNoWeather(location) {
 		const nextHour = data.properties.timeseries[1]?.data.instant.details;
 
 		// Get temperature range (current and next hour)
-		const tempMin = Math.min(current.air_temperature, nextHour?.air_temperature || current.air_temperature);
-		const tempMax = Math.max(current.air_temperature, nextHour?.air_temperature || current.air_temperature);
+		const tempMin = Math.min(
+			current.air_temperature,
+			nextHour?.air_temperature || current.air_temperature
+		);
+		const tempMax = Math.max(
+			current.air_temperature,
+			nextHour?.air_temperature || current.air_temperature
+		);
 
 		// Get weather condition
-		const weatherCode = data.properties.timeseries[0].data.next_1_hours?.summary?.symbol_code || 'partlycloudy_day';
+		const weatherCode =
+			data.properties.timeseries[0].data.next_1_hours?.summary?.symbol_code || 'partlycloudy_day';
 		const weather = getWeatherCondition(weatherCode);
 
 		// Get wind data
@@ -152,10 +175,8 @@ export async function fetchAllWeatherData(useOpenWeather = false, apiKey = null)
 
 	try {
 		// Fetch weather data for all locations
-		const weatherPromises = locations.map(location =>
-			useOpenWeather
-				? fetchOpenWeatherMap(location, apiKey)
-				: fetchYrNoWeather(location)
+		const weatherPromises = locations.map((location) =>
+			useOpenWeather ? fetchOpenWeatherMap(location, apiKey) : fetchYrNoWeather(location)
 		);
 
 		const weatherData = await Promise.all(weatherPromises);
@@ -164,9 +185,8 @@ export async function fetchAllWeatherData(useOpenWeather = false, apiKey = null)
 		return weatherData.map((data, index) => ({
 			...data,
 			x: locations[index].x || 50, // Default x position
-			y: locations[index].y || 50  // Default y position
+			y: locations[index].y || 50 // Default y position
 		}));
-
 	} catch (error) {
 		console.error('Error fetching weather data:', error);
 		return locations.map(createFallbackWeatherData);
@@ -180,10 +200,9 @@ export async function fetchNeretvaForecast() {
 		const lat = 43.33;
 		const lon = 17.88;
 
-		const response = await fetch(
-			`${YR_NO_BASE_URL}?lat=${lat}&lon=${lon}`,
-			{ headers: API_HEADERS }
-		);
+		const response = await fetch(`${YR_NO_BASE_URL}?lat=${lat}&lon=${lon}`, {
+			headers: API_HEADERS
+		});
 
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
@@ -201,10 +220,10 @@ export async function fetchNeretvaForecast() {
 			targetDate.setDate(today.getDate() + dayOffset);
 
 			// Find weather data for this day at different times
-			const nightData = findDataForTime(timeSeries, targetDate, 2);    // 2 AM
-			const morningData = findDataForTime(timeSeries, targetDate, 8);  // 8 AM
+			const nightData = findDataForTime(timeSeries, targetDate, 2); // 2 AM
+			const morningData = findDataForTime(timeSeries, targetDate, 8); // 8 AM
 			const afternoonData = findDataForTime(timeSeries, targetDate, 14); // 2 PM
-			const eveningData = findDataForTime(timeSeries, targetDate, 20);  // 8 PM
+			const eveningData = findDataForTime(timeSeries, targetDate, 20); // 8 PM
 
 			// Get day's temperature range
 			const dayTemps = [];
@@ -220,13 +239,15 @@ export async function fetchNeretvaForecast() {
 
 			// Calculate daily precipitation
 			const precipitation = calculateDayPrecipitation(timeSeries, targetDate);
-			const windSpeed = afternoonData ?
-				Math.round(afternoonData.instant.details.wind_speed) : 3;
+			const windSpeed = afternoonData ? Math.round(afternoonData.instant.details.wind_speed) : 3;
 
 			const forecast = {
-				date: dayOffset === 0 ? `Today ${formatDate(targetDate)}` :
-					dayOffset === 1 ? `Monday ${formatDate(targetDate)}` :
-						`${formatDayName(targetDate)} ${formatDate(targetDate)}`,
+				date:
+					dayOffset === 0
+						? `Today ${formatDate(targetDate)}`
+						: dayOffset === 1
+							? `Monday ${formatDate(targetDate)}`
+							: `${formatDayName(targetDate)} ${formatDate(targetDate)}`,
 				night: {
 					icon: getWeatherSymbol(nightData, true),
 					temp: nightData ? Math.round(nightData.instant.details.air_temperature) : tempLow
@@ -253,7 +274,6 @@ export async function fetchNeretvaForecast() {
 		}
 
 		return dailyForecasts;
-
 	} catch (error) {
 		console.error('Error fetching Neretva forecast:', error);
 		// Return fallback data
@@ -343,8 +363,7 @@ function generateFallbackForecast() {
 		date.setDate(today.getDate() + i);
 
 		fallbackData.push({
-			date: i === 0 ? `Today ${formatDate(date)}` :
-				`${formatDayName(date)} ${formatDate(date)}`,
+			date: i === 0 ? `Today ${formatDate(date)}` : `${formatDayName(date)} ${formatDate(date)}`,
 			night: { icon: 'partlycloudy_night', temp: 15 + Math.floor(Math.random() * 5) },
 			morning: { icon: 'clearsky_day', temp: 18 + Math.floor(Math.random() * 5) },
 			afternoon: { icon: 'partlycloudy_day', temp: 25 + Math.floor(Math.random() * 5) },
