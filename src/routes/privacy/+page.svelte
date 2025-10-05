@@ -17,10 +17,20 @@
 	<p class="mb-2 text-gray-800">{$t('privacy.ads.text')}</p>
 	<ul class="mb-6 list-disc pl-6 text-gray-800">
 		<li>
-			{$t('privacy.ads.manage')}: 
-			<a class="text-blue-600 hover:underline" href="https://www.google.com/settings/ads" rel="noopener noreferrer" target="_blank">Google Ads Settings</a>
+			{$t('privacy.ads.manage')}:
+			<a
+				class="text-blue-600 hover:underline"
+				href="https://www.google.com/settings/ads"
+				rel="noopener noreferrer"
+				target="_blank">Google Ads Settings</a
+			>
 			<span class="mx-1">/</span>
-			<a class="text-blue-600 hover:underline" href="http://www.aboutads.info/" rel="noopener noreferrer" target="_blank">aboutads.info</a>
+			<a
+				class="text-blue-600 hover:underline"
+				href="http://www.aboutads.info/"
+				rel="noopener noreferrer"
+				target="_blank">aboutads.info</a
+			>
 		</li>
 	</ul>
 
