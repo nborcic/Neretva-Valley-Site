@@ -25,23 +25,24 @@
 	}
 </script>
 
-<div class="h-100vh bg-gradient-to-br from-blue-50 to-indigo-100">
+<div class="h-100vh" style="background: linear-gradient(135deg, #f8f6f0 0%, #f0ede4 100%);">
 	<!-- Header Section -->
 	<header class="border-b bg-white shadow-sm">
 		<div class="mx-auto max-w-7xl px-4 py-6">
-			<h1 class="text-center text-3xl font-bold text-gray-900">Neretva Valley Weather</h1>
+			<h1 class="text-center text-3xl font-bold text-gray-900">{$t('main.header.title')}</h1>
 			<p class="mt-2 text-center text-gray-600">
-				Real-time weather conditions across the Neretva River Delta
+				{$t('main.header.subtitle')}
 			</p>
 		</div>
 	</header>
 
-	<main class="  px-4 py-8">
+	<main class="px-4 py-8">
+		<div class="grid grid-cols-1 gap-8 lg:grid-cols-2"></div>
 		<!-- Forecast Table Section -->
 		<section class="mb-8 overflow-hidden rounded-xl bg-white shadow-lg">
-			<div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+			<div class="px-6 py-4" style="background: linear-gradient(90deg, #5a9fd4 0%, #4a8bc2 100%);">
 				<h2 class="flex items-center text-xl font-semibold text-white">
-					🌤️ 2-Day Weather Forecast
+					🌤️ {$t('main.forecast.title')}
 				</h2>
 			</div>
 			<div class="overflow-x-auto">
@@ -85,9 +86,9 @@
 								<td class="px-4 py-3 text-center">{d.afternoon}</td>
 								<td class="px-4 py-3 text-center">{d.evening}</td>
 								<td class="px-4 py-3 text-center whitespace-nowrap">
-									<span class="font-semibold text-red-600">{d.hi}°</span>
+									<span class="font-semibold" style="color: #87CEEB;">{d.hi}°</span>
 									<span class="mx-1 text-gray-400">/</span>
-									<span class="font-semibold text-blue-600">{d.lo}°</span>
+									<span class="font-semibold" style="color: #5a9fd4;">{d.lo}°</span>
 								</td>
 								<td class="px-4 py-3 text-center font-medium">
 									{d.precip}mm
@@ -102,54 +103,78 @@
 			</div>
 		</section>
 
-		<!-- Weather Map Section -->
 		<section class="mb-8 overflow-hidden rounded-xl bg-white shadow-lg">
-			<div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
-				<h2 class="flex items-center text-xl font-semibold text-white">Interactive Weather Map</h2>
-				<p class="mt-1 text-sm text-indigo-100">
-					Click on locations to see detailed weather information
-				</p>
-			</div>
-			<div class="p-6">
-				<WeatherMap />
-			</div>
-		</section>
-
-		<!-- External Weather Sources Section -->
-		<section class="grid grid-cols-1 gap-8 lg:grid-cols-2">
-			<!-- YR Weather Card -->
-			<div class="overflow-hidden rounded-xl bg-white shadow-lg">
-				<div class="bg-gradient-to-r from-green-600 to-teal-600 px-6 py-4">
-					<h3 class="flex items-center text-lg font-semibold text-white">🔗 YR.no Weather Card</h3>
-					<p class="mt-1 text-sm text-green-100">
-						Live weather data from Norwegian Meteorological Institute
+			<!-- Weather Map Section -->
+			<section class="mb-8 overflow-hidden rounded-xl bg-white shadow-lg">
+				<div
+					class="px-6 py-4"
+					style="background: linear-gradient(90deg, #87CEEB 0%, #6BB6FF 100%);"
+				>
+					<h2 class="flex items-center text-xl font-semibold text-white">
+						{$t('main.map.title')}
+					</h2>
+					<p class="mt-1 text-sm text-blue-100">
+						{$t('main.map.description')}
 					</p>
 				</div>
 				<div class="p-6">
-					<iframe
-						src="https://www.yr.no/en/content/2-3194528/card.html"
-						class="h-96 w-full rounded-lg border-0"
-						title="YR Weather Card"
-						loading="lazy"
-					></iframe>
+					<WeatherMap />
 				</div>
-			</div>
+			</section>
 
-			<!-- Meteogram -->
-			<div class="overflow-hidden rounded-xl bg-white shadow-lg">
-				<div class="bg-gradient-to-r from-orange-600 to-red-600 px-6 py-4">
-					<h3 class="flex items-center text-lg font-semibold text-white">📊 Weather Meteogram</h3>
-					<p class="mt-1 text-sm text-orange-100">48-hour detailed weather chart</p>
+			<!-- External Weather Sources Section -->
+			<section class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+				<!-- YR Weather Card -->
+				<div class="overflow-hidden rounded-xl bg-white shadow-lg">
+					<div
+						class="px-6 py-4"
+						style="background: linear-gradient(90deg, #5a9fd4 0%, #4a8bc2 100%);"
+					>
+						<h3 class="flex items-center text-lg font-semibold text-white">
+							🔗 {$t('main.sources.yr.title')}
+						</h3>
+						<p class="mt-1 text-sm text-blue-100">
+							{$t('main.sources.yr.description')}
+						</p>
+					</div>
+					<div class="p-6">
+						<iframe
+							src="https://www.yr.no/en/content/2-3194528/card.html"
+							class="h-96 w-full rounded-lg border-0"
+							title="YR Weather Card"
+							loading="lazy"
+						></iframe>
+					</div>
 				</div>
-				<div class="p-6">
-					<img
-						src="https://www.yr.no/en/content/1-72837/meteogram.svg"
-						alt="Weather Meteogram"
-						class="h-96 w-full rounded-lg object-cover"
-						loading="lazy"
-					/>
+
+				<!-- Meteogram -->
+				<!-- Meteogram -->
+				<div class="overflow-hidden rounded-xl bg-white shadow-lg">
+					<div
+						class="px-6 py-4"
+						style="background: linear-gradient(90deg, #5a9fd4 0%, #4a8bc2 100%);"
+					>
+						<h3 class="flex items-center text-lg font-semibold text-white">
+							📊 {$t('main.sources.meteogram.title')}
+						</h3>
+						<p class="mt-1 text-sm text-blue-100">{$t('main.sources.meteogram.description')}</p>
+					</div>
+					<div class="p-6">
+						<div class="relative w-full" style="aspect-ratio: 16/9; max-height: 500px;">
+							<img
+								src="https://www.yr.no/en/content/2-3194528/meteogram.svg"
+								alt="Weather Meteogram"
+								class="absolute inset-0 h-96 w-full rounded-lg"
+								loading="lazy"
+								on:error={() => {
+									console.log('Meteogram failed to load');
+									// Could add fallback here
+								}}
+							/>
+						</div>
+					</div>
 				</div>
-			</div>
+			</section>
 		</section>
 	</main>
 </div>

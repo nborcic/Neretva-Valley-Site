@@ -1,32 +1,32 @@
-<script>
-	import { onMount } from 'svelte';
-	import * as echarts from 'echarts';
+<script lang="ts">
+	import { onMount, onDestroy } from 'svelte';
+	import { browser } from '$app/environment';
 	import { fetchAllWeatherData } from '$lib/services/weatherService.js';
 
-	let chartContainer;
-	let chart;
+	let mapContainer: HTMLElement;
+	let map: any;
+	let L: any;
 	let weatherData = [];
 	let loading = true;
 	let error = null;
+	let markers: any[] = [];
 
-	// Original hardcoded positions for the map display
-	const originalPositions = [
-		// Coastal/Delta towns
-		{ name: 'Ploče', x: 14, y: 100 },
-		{ name: 'Blace', x: 80, y: 35 },
-		{ name: 'Opuzen', x: 65, y: 20 },
-		{ name: 'Duba', x: 65, y: 60 },
-		{ name: 'Komin', x: 60, y: 15 },
-		{ name: 'Krvavac', x: 80, y: 40 },
-		{ name: 'Kula Norinska', x: 75, y: 45 },
-		{ name: 'Vlaka', x: 80, y: 30 },
-		{ name: 'Mlinište', x: 65, y: 15 }
-	];
+	// Real coordinates for Croatian Neretva Delta locations
+	const locationCoordinates = {
+		Ploče: [43.0533, 17.4319],
+		Blace: [43.1167, 17.6833],
+		Opuzen: [43.0267, 17.5647],
+		Duba: [43.075, 17.55],
+		Komin: [43.02, 17.54],
+		Krvavac: [43.11, 17.67],
+		'Kula Norinska': [43.09, 17.62],
+		Vlaka: [43.105, 17.665],
+		Mlinište: [43.015, 17.535]
+	};
 
-	// Function to get position for a location
-	function getPosition(locationName) {
-		const pos = originalPositions.find((p) => p.name === locationName);
-		return pos ? { x: pos.x, y: pos.y } : { x: 50, y: 50 };
+	// Function to get coordinates for a location
+	function getCoordinates(locationName: string): [number, number] {
+		return locationCoordinates[locationName] || [43.05, 17.55]; // Default to Ploče area
 	}
 
 	// Load weather data
@@ -38,19 +38,19 @@
 			// Try yr.no first (free, no API key needed)
 			const data = await fetchAllWeatherData(false);
 
-			// Merge with original positions
+			// Merge with real coordinates
 			weatherData = data.map((location) => {
-				const position = getPosition(location.name);
+				const coordinates = getCoordinates(location.name);
 				return {
 					...location,
-					x: position.x,
-					y: position.y
+					lat: coordinates[0],
+					lng: coordinates[1]
 				};
 			});
 
-			// Update chart if it exists
-			if (chart) {
-				updateChart();
+			// Update map markers if map exists
+			if (map && L) {
+				updateMapMarkers();
 			}
 		} catch (err) {
 			error = err.message;
@@ -60,148 +60,143 @@
 		}
 	}
 
-	// Function to update chart with new data
-	function updateChart() {
-		if (!chart || !weatherData.length) return;
+	// Function to get weather icon
+	function getWeatherIcon(weather: string): string {
+		switch (weather) {
+			case 'sunny':
+				return '☀️';
+			case 'partly-cloudy':
+				return '⛅';
+			case 'cloudy':
+				return '☁️';
+			case 'rainy':
+				return '🌧️';
+			case 'snow':
+				return '❄️';
+			case 'storm':
+				return '⛈️';
+			default:
+				return '🌤️';
+		}
+	}
 
-		const option = {
-			backgroundColor: 'transparent',
-			title: {
-				left: 'center',
-				top: 20,
-				textStyle: {
-					fontSize: 24,
-					fontWeight: 'bold',
-					color: '#1e40af'
-				}
-			},
-			grid: {
-				left: '0%',
-				right: '0%',
-				top: '15%',
-				bottom: '10%'
-			},
-			xAxis: {
-				type: 'value',
-				show: false,
-				min: 0,
-				max: 100
-			},
-			yAxis: {
-				type: 'value',
-				show: false,
-				min: 0,
-				max: 100
-			},
-			series: [
+	// Function to get weather color
+	function getWeatherColor(weather: string): string {
+		switch (weather) {
+			case 'sunny':
+				return 'transparent';
+			case 'partly-cloudy':
+				return 'transparent';
+			case 'cloudy':
+				return 'transparent';
+			case 'rainy':
+				return 'transparent';
+			case 'snow':
+				return 'transparent';
+			case 'storm':
+				return 'transparent';
+			default:
+				return 'transparent';
+		}
+	}
+
+	// Function to update map markers
+	function updateMapMarkers() {
+		if (!map || !L || !weatherData.length) return;
+
+		// Clear existing markers
+		markers.forEach((marker) => map.removeLayer(marker));
+		markers = [];
+
+		// Add new markers
+		weatherData.forEach((city) => {
+			const icon = L.divIcon({
+				html: `
+					<div class="weather-marker" style="
+						background-color: ${getWeatherColor(city.weather)};
+						border-radius: 50%;
+						width: 40px;
+						height: 40px;
+						display: flex;
+						flex-direction: column;
+						align-items: center;
+						justify-content: center;
+						box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+						font-size: 12px;
+						color: white;
+						font-weight: bold;
+					">
+						<div style="font-size: 16px;">${getWeatherIcon(city.weather)}</div>
+						<div style="font-size: 10px;">${city.temp}</div>
+					</div>
+				`,
+				className: 'weather-marker-container',
+				iconSize: [40, 40],
+				iconAnchor: [20, 20]
+			});
+
+			const marker = L.marker([city.lat, city.lng], { icon }).bindPopup(`
+					<div style="text-align: center; padding: 8px;">
+						<h3 style="margin: 0 0 8px 0; color: #1e40af; font-weight: bold;">${city.name}</h3>
+						<div style="font-size: 24px; margin: 8px 0;">${getWeatherIcon(city.weather)}</div>
+						<p style="margin: 4px 0; color: #374151;"><strong>Temperature:</strong> ${city.temp}</p>
+						<p style="margin: 4px 0; color: #374151;"><strong>Weather:</strong> ${getWeatherDescription(city.weather)}</p>
+						<p style="margin: 4px 0; color: #374151;"><strong>Wind:</strong> ${city.wind}</p>
+					</div>
+				`);
+
+			marker.addTo(map);
+			markers.push(marker);
+		});
+	}
+
+	// Initialize map
+	async function initializeMap() {
+		if (!browser || !mapContainer) return;
+
+		try {
+			// Dynamically import Leaflet only in browser
+			L = await import('leaflet');
+
+			// Initialize map centered on Neretva Delta region
+			map = L.map(mapContainer, {
+				center: [43.05, 17.55], // Ploče area
+				zoom: 11,
+				zoomControl: true,
+				attributionControl: true
+			});
+
+			// Add OpenStreetMap tiles (free)
+			//L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			//		attribution:
+			//		'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+			//		maxZoom: 18
+			//	}).addTo(map);
+
+			//Alternative tile layer options (commented out):
+			//Satellite imagery from Esri (free)
+			L.tileLayer(
+				'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
 				{
-					type: 'scatter',
-					data: weatherData.map((city) => ({
-						value: [city.x, city.y],
-						name: city.name,
-						temp: city.temp,
-						weather: city.weather,
-						wind: city.wind,
-						symbolSize: 35,
-						symbol: getWeatherSymbol(city.weather),
-						itemStyle: {
-							color: getWeatherColor(city.weather),
-							opacity: 1
-						}
-					})),
-					label: {
-						show: true,
-						position: 'inside',
-						formatter: function (params) {
-							return `{name|${params.data.name}}\n{temp|${params.data.temp}}`;
-						},
-						rich: {
-							name: {
-								fontSize: 10,
-								fontWeight: 'bold',
-								color: '#1e40af'
-							},
-							temp: {
-								fontSize: 7,
-								color: '#374151'
-							}
-						}
-					},
-					emphasis: {
-						scale: 1.2,
-						itemStyle: {
-							opacity: 1
-						}
-					}
+					attribution:
+						'© Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
 				}
-			],
-			tooltip: {
-				trigger: 'item',
-				formatter: function (params) {
-					return `
-						<div style="padding: 10px;">
-							<h3 style="margin: 0 0 5px 0; color: #1e40af;">${params.data.name}</h3>
-							<p style="margin: 0; color: #374151;">Temperature: ${params.data.temp}</p>
-							<p style="margin: 0; color: #374151;">Weather: ${getWeatherDescription(params.data.weather)}</p>
-							<p style="margin: 0; color: #374151;">Wind: ${params.data.wind}</p>
-						</div>
-					`;
-				}
-			}
-		};
+			).addTo(map);
 
-		chart.setOption(option);
-	}
+			// Topographic map
+			// L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+			// 	attribution: '© <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+			// }).addTo(map);
 
-	onMount(async () => {
-		if (chartContainer) {
-			chart = echarts.init(chartContainer);
-
-			// Load weather data and update chart
+			// Load weather data and add markers
 			await loadWeatherData();
-
-			// Handle window resize
-			const handleResize = () => chart.resize();
-			window.addEventListener('resize', handleResize);
-
-			return () => {
-				window.removeEventListener('resize', handleResize);
-				chart.dispose();
-			};
-		}
-	});
-
-	function getWeatherSymbol(weather) {
-		switch (weather) {
-			case 'sunny':
-				return 'image:///Sunny.gif';
-			case 'partly-cloudy':
-				return 'circle';
-			case 'cloudy':
-				return 'image://Cloudy.gif';
-			case 'rainy':
-				return 'circle';
-			default:
-				return 'circle';
+		} catch (err) {
+			console.error('Error initializing map:', err);
+			error = 'Failed to initialize map';
 		}
 	}
 
-	function getWeatherColor(weather) {
-		switch (weather) {
-			case 'sunny':
-				return 'transparent'; // Use icon instead of color
-			case 'partly-cloudy':
-				return '#94a3b8';
-			case 'cloudy':
-				return 'image://Cloudy.gif'; // Use icon instead of color
-			case 'rainy':
-				return '#3b82f6';
-			default:
-				return '#e5e7eb';
-		}
-	}
-
-	function getWeatherDescription(weather) {
+	function getWeatherDescription(weather: string): string {
 		switch (weather) {
 			case 'sunny':
 				return 'Sunny';
@@ -211,49 +206,61 @@
 				return 'Cloudy';
 			case 'rainy':
 				return 'Rainy';
+			case 'snow':
+				return 'Snow';
+			case 'storm':
+				return 'Storm';
 			default:
 				return 'Unknown';
 		}
 	}
+
+	onMount(async () => {
+		// Import Leaflet CSS
+		if (browser) {
+			const link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+			link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+			link.crossOrigin = '';
+			document.head.appendChild(link);
+
+			// Wait for CSS to load then initialize map
+			link.onload = () => {
+				initializeMap();
+			};
+		}
+	});
+
+	onDestroy(() => {
+		if (map) {
+			map.remove();
+		}
+	});
 </script>
 
-<div class="w-[100%] rounded-lg bg-white p-4 shadow-md">
+<div class="w-full rounded-lg bg-white p-4 shadow-md">
 	<div class="relative h-96 w-full">
-		<!-- Background map image -->
-		<img
-			src="/neretva_map_maps.jpg"
-			class="absolute inset-0 z-[1] h-full w-full rounded-lg object-cover opacity-60"
-			alt="Neretva River Delta Map"
-			on:error={() => console.log('Image failed to load')}
-			on:load={() => console.log('Image loaded successfully')}
-		/>
-		<!-- Map attribution -->
-		<div
-			class="absolute right-2 bottom-2 z-[5] rounded bg-white/80 px-2 py-1 text-xs text-gray-600"
-		>
-			© Google
-		</div>
-
 		<!-- Loading state -->
 		{#if loading}
-			<div class="absolute inset-0 z-[15] flex items-center justify-center bg-white/80">
+			<div class="absolute inset-0 z-[50] flex items-center justify-center rounded-lg bg-white/90">
 				<div class="text-center">
 					<div
 						class="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"
 					></div>
-					<p class="text-gray-600">Loading weather data...</p>
+					<p class="text-gray-600">Loading weather map...</p>
 				</div>
 			</div>
 		{/if}
 
 		<!-- Error state -->
 		{#if error}
-			<div class="absolute inset-0 z-[15] flex items-center justify-center bg-white/80">
+			<div class="absolute inset-0 z-[50] flex items-center justify-center rounded-lg bg-white/90">
 				<div class="text-center">
-					<p class="mb-2 text-red-600">Error loading weather data</p>
+					<p class="mb-2 text-red-600">Error: {error}</p>
 					<button
 						on:click={loadWeatherData}
-						class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+						class="rounded bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
 					>
 						Retry
 					</button>
@@ -261,7 +268,30 @@
 			</div>
 		{/if}
 
-		<!-- Weather chart overlay -->
-		<div bind:this={chartContainer} class="absolute inset-0 z-[10] h-full w-full"></div>
+		<!-- Map container -->
+		<div
+			bind:this={mapContainer}
+			class="leaflet-container h-full w-full overflow-hidden rounded-lg"
+			class:opacity-50={loading}
+		></div>
 	</div>
 </div>
+
+<style>
+	:global(.weather-marker-container) {
+		background: transparent !important;
+		border: none !important;
+	}
+
+	:global(.leaflet-popup-content-wrapper) {
+		border-radius: 8px;
+	}
+
+	:global(.leaflet-popup-tip) {
+		background: white;
+	}
+
+	:global(.leaflet-control-attribution) {
+		font-size: 10px;
+	}
+</style>

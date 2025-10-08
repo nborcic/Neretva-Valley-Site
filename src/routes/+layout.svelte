@@ -2,7 +2,7 @@
 	import '../app.css';
 	import { locale } from '$lib/i18n-lib';
 	import { onMount } from 'svelte';
-
+	import { t } from '$lib/i18n-lib';
 	function setLang(l) {
 		locale.set(l);
 	}
@@ -16,13 +16,18 @@
 	></script>
 </svelte:head>
 
-<div class="flex min-h-screen flex-col bg-gray-100">
+<div class="flex min-h-screen flex-col" style="background-color: var(--color-dominant);">
 	<!--header title -->
-	<header class="bg-blue-600 p-3 text-white shadow-md">
+	<header class="p-3 text-white shadow-md" style="background-color: var(--color-secondary);">
 		<div class="container mx-auto flex items-center justify-between">
 			<span class="flex items-center gap-2">
-				<h1 class="text-3xl font-bold underline hover:text-blue-400"><a href="/"> Neretva</a></h1>
-				<h1 class="text-3xl font-bold">Valley Weather</h1>
+				<h1 class="text-3xl font-bold underline hover:text-blue-400">
+					<a href="/">{$t('main.header.title').split(' ')[0]}</a>
+				</h1>
+				<h1 class="text-3xl font-bold">
+					{$t('main.header.title').split(' ')[1]}
+					{$t('main.header.title').split(' ')[2]}
+				</h1>
 			</span>
 			<div class="flex gap-2">
 				<button
@@ -37,11 +42,12 @@
 		</div>
 	</header>
 
-	<main class=" mx-auto flex gap-4 p-4">
-		<aside class=" w-[20%] rounded-lg bg-white p-6 shadow-md md:col-span-1">
+	<main class="mx-auto flex gap-4 p-4">
+		<!-- Sidebar backgrounds using dominant color -->
+		<aside class="w-[20%] rounded-lg p-6 shadow-md" style="background-color: white;">
 			<!-- Left Sidebar Ad Slot -->
 			<div class="mt-6">
-				<h3 class="mb-2 text-center text-lg font-semibold">Ovdje može biti vaša reklama</h3>
+				<h3 class="mb-2 text-center text-lg font-semibold">{$t('ad.placeholder')}</h3>
 			</div>
 			<div class="my-4 rounded-md border border-gray-200 bg-gray-50 p-4">
 				<p class="text-center text-gray-500">[AdSense Sidebar Ad Here - Left]</p>
@@ -67,13 +73,14 @@
 				});
 			</script>
 		</aside>
-		<div class=" h-100vh w-[80%] rounded-lg bg-white p-6 shadow-md md:col-span-2">
+
+		<div class="w-[80%] rounded-lg p-6 shadow-md" style="background-color: white;">
 			<slot />
 		</div>
 		<aside class=" w-[20%] rounded-lg bg-white p-6 shadow-md md:col-span-1">
 			<!-- Sidebar Ad Slot Right -->
 			<div class="mt-6">
-				<h3 class="mb-2 text-center text-lg font-semibold">Ovdje može biti vaša reklama</h3>
+				<h3 class="mb-2 text-center text-lg font-semibold">{$t('ad.placeholder')}</h3>
 			</div>
 			<div class="my-4 rounded-md border border-gray-200 bg-gray-50 p-4">
 				<p class="text-center text-gray-500">[AdSense Sidebar Ad Right]</p>
@@ -100,23 +107,28 @@
 		</aside>
 	</main>
 
-	<footer class="mt-8 bg-gray-800 p-4 text-white">
+	<!-- Footer with secondary color -->
+	<footer class="mt-8 p-4" style="background-color: var(--color-secondary); color: white;">
 		<div class="container mx-auto text-center text-sm">
-			<p>&copy; 2025 Neretva Valley Weather. All rights reserved.</p>
+			<p>&copy; 2025 {$t('main.header.title')}. {$t('footer.copyright')}</p>
 			<nav class="mt-2">
-				Weather data from
+				{$t('footer.weatherdata')}
 				<a href="https://www.met.no/en" class="text-blue-300 hover:underline">MET Norway</a> /
 				<a href="https://www.yr.no/" class="text-blue-300 hover:underline">Yr</a>,
 				<a
 					href="https://creativecommons.org/licenses/by/4.0/"
 					class="text-blue-300 hover:underline"
 				>
-					CC BY 4.0
-				</a>. Changes may have been made.
-				<a href="https://developer.yr.no/" class="text-blue-300 hover:underline">Learn more</a>
+					{$t('footer.ccby')}
+				</a>. {$t('footer.changes')}
+				<a href="https://developer.yr.no/" class="text-blue-300 hover:underline"
+					>{$t('footer.learnmore')}</a
+				>
 				<br />
-				<a href="mailto:contact@example.com" class="mx-2 text-blue-300 hover:underline">Contact</a>
-				<p class="text-sm opacity-10">Built with ❤️ for the Neretva</p>
+				<a href="mailto:contact@example.com" class="mx-2 text-blue-300 hover:underline"
+					>{$t('footer.contact')}</a
+				>
+				<p class="text-sm opacity-10">{$t('footer.built')}</p>
 			</nav>
 		</div>
 	</footer>
