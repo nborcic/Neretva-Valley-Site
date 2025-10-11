@@ -16,11 +16,15 @@ const NERETVA_LOCATIONS = [
 	{ name: 'Blace', lat: 43.45, lon: 17.95 },
 	{ name: 'Opuzen', lat: 43.3, lon: 18.1 },
 	{ name: 'Duba', lat: 43.3, lon: 17.7 },
-	{ name: 'Komin', lat: 43.25, lon: 18.15 },
+	{ name: 'Komin', lat: 42.35, lon: 19.15 },
 	{ name: 'Krvavac', lat: 43.45, lon: 17.9 },
 	{ name: 'Kula Norinska', lat: 43.4, lon: 17.85 },
 	{ name: 'Vlaka', lat: 43.45, lon: 18.0 },
-	{ name: 'Mlinište', lat: 43.3, lon: 18.15 }
+	{ name: 'Mlinište', lat: 43.3, lon: 18.15 },
+	{
+		name: 'Rogotnski Most', lat: 17.48, lon: 17.48
+
+	}
 ];
 
 // Convert wind direction from degrees to compass direction

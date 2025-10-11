@@ -13,20 +13,26 @@
 
 	// Real coordinates for Croatian Neretva Delta locations
 	const locationCoordinates = {
-		Ploče: [43.0533, 17.4319],
-		Blace: [43.1167, 17.6833],
-		Opuzen: [43.0267, 17.5647],
-		Duba: [43.075, 17.55],
-		Komin: [43.02, 17.54],
-		Krvavac: [43.11, 17.67],
-		'Kula Norinska': [43.09, 17.62],
-		Vlaka: [43.105, 17.665],
-		Mlinište: [43.015, 17.535]
+		Ploče: [43.056155, 17.431662],
+		Blace: [43.000538, 17.481634],
+		Opuzen: [43.017655, 17.562971],
+		Duba: [42.978508, 17.493366],
+		Komin: [43.041829, 17.535853],
+		Krvavac: [43.026761, 17.589574],
+		'Kula Norinska': [43.030123, 17.604122],
+		Vlaka: [43.002431, 17.532172],
+		Mlinište: [42.992633, 17.61619],
+		'Rogotinski Most': [43.039721, 17.48462]
 	};
 
 	// Function to get coordinates for a location
 	function getCoordinates(locationName: string): [number, number] {
-		return locationCoordinates[locationName] || [43.05, 17.55]; // Default to Ploče area
+		const coordinates = locationCoordinates[locationName];
+		if (!coordinates) {
+			console.warn(`No coordinates found for location: ${locationName}, using default`);
+			return [43.05, 17.55]; // Default to Ploče area
+		}
+		return coordinates;
 	}
 
 	// Load weather data
@@ -82,7 +88,7 @@
 
 	// Function to get weather color
 	function getWeatherColor(weather: string): string {
-		switch (weather) {
+		/* switch (weather) {
 			case 'sunny':
 				return 'transparent';
 			case 'partly-cloudy':
@@ -97,7 +103,8 @@
 				return 'transparent';
 			default:
 				return 'transparent';
-		}
+		} */
+		return 'transparent';
 	}
 
 	// Function to update map markers
@@ -122,17 +129,18 @@
 						align-items: center;
 						justify-content: center;
 						box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-						font-size: 12px;
+						font-size: 10px;
 						color: white;
 						font-weight: bold;
 					">
 						<div style="font-size: 16px;">${getWeatherIcon(city.weather)}</div>
+						<div style="font-size: 8px; margin-top: -2px; line-height: 1;">${city.name}</div>
 						<div style="font-size: 10px;">${city.temp}</div>
 					</div>
 				`,
 				className: 'weather-marker-container',
 				iconSize: [40, 40],
-				iconAnchor: [20, 20]
+				iconAnchor: [20, 30]
 			});
 
 			const marker = L.marker([city.lat, city.lng], { icon }).bindPopup(`
@@ -160,8 +168,8 @@
 
 			// Initialize map centered on Neretva Delta region
 			map = L.map(mapContainer, {
-				center: [43.05, 17.55], // Ploče area
-				zoom: 11,
+				center: [43.02, 17.52], // Ploče area
+				zoom: 12,
 				zoomControl: true,
 				attributionControl: true
 			});
