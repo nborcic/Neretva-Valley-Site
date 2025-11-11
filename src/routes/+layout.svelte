@@ -18,7 +18,7 @@
 
 <div class="flex min-h-screen flex-col" style="background-color: var(--color-dominant);">
 	<!--header title -->
-	<header class="p-3 text-white shadow-md" style="background-color: var(--color-secondary);">
+	<header class="p-3 text-blue-400 shadow-md" style="background-color: var(--color-secondary);">
 		<div class="container mx-auto flex items-center justify-between">
 			<span class="flex items-center gap-2">
 				<h1 class="text-3xl font-bold underline hover:text-blue-400">
@@ -28,6 +28,16 @@
 					{$t('main.header.title').split(' ')[1]}
 					{$t('main.header.title').split(' ')[2]}
 				</h1>
+				<div class="flex flex-1 justify-start">
+					<a
+						href="#status"
+						class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-blue-700"
+						style="background: linear-gradient(90deg, #dceefa 0%, #c1def4 100%);"
+					>
+						<span class="h-2 w-2 rounded-full bg-blue-500"></span>
+						{$t('main.header.status')}
+					</a>
+				</div>
 			</span>
 			<div class="flex gap-2">
 				<button

@@ -1,15 +1,19 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
-	import { fetchAllWeatherData } from '$lib/services/weatherService.js';
+	import { fetchAllWeatherData, type WeatherObservation } from '$lib/services/weatherService';
+	import { t } from '$lib/i18n-lib';
+	import type * as Leaflet from 'leaflet';
+
+	type WeatherMapObservation = WeatherObservation & { lng: number };
 
 	let mapContainer: HTMLElement;
-	let map: any;
-	let L: any;
-	let weatherData = [];
+	let map: Leaflet.Map | null = null;
+	let L: typeof Leaflet | null = null;
+	let weatherData: WeatherMapObservation[] = [];
 	let loading = true;
-	let error = null;
-	let markers: any[] = [];
+	let error: string | null = null;
+	let markers: Leaflet.Marker[] = [];
 
 	// Real coordinates for Croatian Neretva Delta locations
 	const locationCoordinates = {
@@ -25,7 +29,6 @@
 		'Rogotinski Most': [43.039721, 17.48462]
 	};
 
-	// Function to get coordinates for a location
 	function getCoordinates(locationName: string): [number, number] {
 		const coordinates = locationCoordinates[locationName];
 		if (!coordinates) {
@@ -35,39 +38,45 @@
 		return coordinates;
 	}
 
-	// Load weather data
 	async function loadWeatherData() {
 		try {
 			loading = true;
 			error = null;
 
-			// Try yr.no first (free, no API key needed)
 			const data = await fetchAllWeatherData(false);
 
-			// Merge with real coordinates
-			weatherData = data.map((location) => {
-				const coordinates = getCoordinates(location.name);
-				return {
-					...location,
-					lat: coordinates[0],
-					lng: coordinates[1]
-				};
-			});
+			weatherData = data
+				.map((location) => {
+					const coordinates = getCoordinates(location.name);
+					const [latitude, longitude] = coordinates;
+					return {
+						...location,
+						lat: latitude,
+						lon: longitude,
+						lng: longitude
+					};
+				})
+				.filter(
+					(location) =>
+						location.temp !== null || location.weather !== null || location.wind !== null
+				);
 
-			// Update map markers if map exists
 			if (map && L) {
 				updateMapMarkers();
 			}
 		} catch (err) {
-			error = err.message;
+			error = err instanceof Error ? err.message : 'Unknown error';
 			console.error('Error loading weather data:', err);
 		} finally {
 			loading = false;
 		}
 	}
 
-	// Function to get weather icon
-	function getWeatherIcon(weather: string): string {
+
+	function getWeatherIcon(weather: WeatherObservation['weather']): string {
+		if (!weather) {
+			return '';
+		}
 		switch (weather) {
 			case 'sunny':
 				return '☀️';
@@ -86,8 +95,7 @@
 		}
 	}
 
-	// Function to get weather color
-	function getWeatherColor(weather: string): string {
+	function getWeatherColor(weather: WeatherObservation['weather']): string {
 		/* switch (weather) {
 			case 'sunny':
 				return 'transparent';
@@ -107,15 +115,12 @@
 		return 'transparent';
 	}
 
-	// Function to update map markers
 	function updateMapMarkers() {
 		if (!map || !L || !weatherData.length) return;
 
-		// Clear existing markers
 		markers.forEach((marker) => map.removeLayer(marker));
 		markers = [];
 
-		// Add new markers
 		weatherData.forEach((city) => {
 			const icon = L.divIcon({
 				html: `
@@ -133,9 +138,9 @@
 						color: white;
 						font-weight: bold;
 					">
-						<div style="font-size: 16px;">${getWeatherIcon(city.weather)}</div>
+						<div style="font-size: 16px;">${getWeatherIcon(city.weather) || '—'}</div>
 						<div style="font-size: 8px; margin-top: -2px; line-height: 1;">${city.name}</div>
-						<div style="font-size: 10px;">${city.temp}</div>
+						<div style="font-size: 10px;">${city.temp ?? '—'}</div>
 					</div>
 				`,
 				className: 'weather-marker-container',
@@ -146,10 +151,10 @@
 			const marker = L.marker([city.lat, city.lng], { icon }).bindPopup(`
 					<div style="text-align: center; padding: 8px;">
 						<h3 style="margin: 0 0 8px 0; color: #1e40af; font-weight: bold;">${city.name}</h3>
-						<div style="font-size: 24px; margin: 8px 0;">${getWeatherIcon(city.weather)}</div>
-						<p style="margin: 4px 0; color: #374151;"><strong>Temperature:</strong> ${city.temp}</p>
+						<div style="font-size: 24px; margin: 8px 0;">${getWeatherIcon(city.weather) || '—'}</div>
+						<p style="margin: 4px 0; color: #374151;"><strong>Temperature:</strong> ${city.temp ?? 'Unavailable'}</p>
 						<p style="margin: 4px 0; color: #374151;"><strong>Weather:</strong> ${getWeatherDescription(city.weather)}</p>
-						<p style="margin: 4px 0; color: #374151;"><strong>Wind:</strong> ${city.wind}</p>
+						<p style="margin: 4px 0; color: #374151;"><strong>Wind:</strong> ${city.wind ?? 'Unavailable'}</p>
 					</div>
 				`);
 
@@ -158,15 +163,12 @@
 		});
 	}
 
-	// Initialize map
 	async function initializeMap() {
 		if (!browser || !mapContainer) return;
 
 		try {
-			// Dynamically import Leaflet only in browser
-			L = await import('leaflet');
+			L = (await import('leaflet')) as typeof Leaflet;
 
-			// Initialize map centered on Neretva Delta region
 			map = L.map(mapContainer, {
 				center: [43.02, 17.52], // Ploče area
 				zoom: 12,
@@ -196,7 +198,6 @@
 			// 	attribution: '© <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
 			// }).addTo(map);
 
-			// Load weather data and add markers
 			await loadWeatherData();
 		} catch (err) {
 			console.error('Error initializing map:', err);
@@ -204,7 +205,8 @@
 		}
 	}
 
-	function getWeatherDescription(weather: string): string {
+	function getWeatherDescription(weather: WeatherObservation['weather']): string {
+		if (!weather) return 'Unavailable';
 		switch (weather) {
 			case 'sunny':
 				return 'Sunny';
@@ -224,7 +226,6 @@
 	}
 
 	onMount(async () => {
-		// Import Leaflet CSS
 		if (browser) {
 			const link = document.createElement('link');
 			link.rel = 'stylesheet';
@@ -233,7 +234,6 @@
 			link.crossOrigin = '';
 			document.head.appendChild(link);
 
-			// Wait for CSS to load then initialize map
 			link.onload = () => {
 				initializeMap();
 			};
@@ -249,29 +249,26 @@
 
 <div class="w-full rounded-lg bg-white p-4 shadow-md">
 	<div class="relative h-96 w-full">
-		<!-- Loading state -->
-		{#if loading}
+		<!-- Loading / Error state overlay -->
+		{#if loading || error}
 			<div class="absolute inset-0 z-[50] flex items-center justify-center rounded-lg bg-white/90">
 				<div class="text-center">
 					<div
-						class="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"
+						class="mx-auto mb-2 h-8 w-8 rounded-full border-b-2 border-blue-600"
+						class:animate-spin={loading}
 					></div>
-					<p class="text-gray-600">Loading weather map...</p>
-				</div>
-			</div>
-		{/if}
-
-		<!-- Error state -->
-		{#if error}
-			<div class="absolute inset-0 z-[50] flex items-center justify-center rounded-lg bg-white/90">
-				<div class="text-center">
-					<p class="mb-2 text-red-600">Error: {error}</p>
-					<button
-						on:click={loadWeatherData}
-						class="rounded bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-					>
-						Retry
-					</button>
+					{#if loading}
+						<p class="text-gray-600">{$t('map.loading')}</p>
+					{/if}
+					{#if error}
+						<p class="mt-2 text-sm text-red-600">{$t('map.fetch_failed')}</p>
+						<button
+							on:click={loadWeatherData}
+							class="mt-3 rounded bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+						>
+							{$t('map.retry')}
+						</button>
+					{/if}
 				</div>
 			</div>
 		{/if}

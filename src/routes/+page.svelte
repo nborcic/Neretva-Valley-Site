@@ -6,7 +6,7 @@
 	export let data: {
 		days: {
 			date: string;
-			label: string;
+			labelKey: string;
 			night: string;
 			morning: string;
 			afternoon: string;
@@ -23,16 +23,24 @@
 			month: 'short'
 		}).format(new Date(dateISO));
 	}
+
+	function switchLanguage(lang: string) {
+		locale.set(lang);
+	}
 </script>
 
 <div class="h-100vh" style="background: linear-gradient(135deg, #f8f6f0 0%, #f0ede4 100%);">
 	<!-- Header Section -->
 	<header class="border-b bg-white shadow-sm">
 		<div class="mx-auto max-w-7xl px-4 py-6">
-			<h1 class="text-center text-3xl font-bold text-gray-900">{$t('main.header.title')}</h1>
-			<p class="mt-2 text-center text-gray-600">
-				{$t('main.header.subtitle')}
-			</p>
+			<div class="flex items-center justify-between">
+				<div class="flex-1 justify-center text-center">
+					<h1 class="text-3xl font-bold text-gray-900">{$t('main.header.title')}</h1>
+					<p class="mt-2 text-center text-gray-600">
+						{$t('main.header.subtitle')}
+					</p>
+				</div>
+			</div>
 		</div>
 	</header>
 
@@ -79,7 +87,10 @@
 						{#each data.days as d}
 							<tr class="border-b border-gray-100 transition-colors hover:bg-gray-50">
 								<td class="px-4 py-3 font-medium text-gray-900">
-									{formatDate(d.date, currentLocale)}
+									<span class="block text-xs tracking-wide text-gray-500 uppercase">
+										{$t(d.labelKey)}
+									</span>
+									<span>{formatDate(d.date, currentLocale)}</span>
 								</td>
 								<td class="px-4 py-3 text-center">{d.night}</td>
 								<td class="px-4 py-3 text-center">{d.morning}</td>
