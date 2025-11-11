@@ -1,0 +1,4 @@
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/neretvalive/public_html
+    - /bin/rsync -a --delete --exclude=".git" --exclude=".cpanel.yml" ./ "$DEPLOYPATH"/
