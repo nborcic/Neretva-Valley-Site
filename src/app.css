@@ -1,5 +1,59 @@
 @import 'tailwindcss';
 
+/* 60-30-10 palette definitions */
+:root,
+:root[data-theme='light'] {
+	--color-60: #f3efe7;
+	--color-30: #e0d8cc;
+	--color-10: #c9781d;
+
+	--color-on-60: #1b1a17;
+	--color-on-30: #1f2933;
+	--color-on-10: #ffffff;
+
+	--color-surface: #ffffff;
+	--color-outline: rgba(27, 26, 23, 0.12);
+}
+
+:root[data-theme='dark'] {
+	--color-60: #0d1b2a;
+	--color-30: #1b263b;
+	--color-10: #f0b429;
+
+	--color-on-60: #e1e8f0;
+	--color-on-30: #e1e8f0;
+	--color-on-10: #0d1b2a;
+
+	--color-surface: #152238;
+	--color-outline: rgba(225, 232, 240, 0.16);
+}
+
+:global(body) {
+	background-color: var(--color-60);
+	color: var(--color-on-60);
+	transition: background-color 180ms ease, color 180ms ease;
+}
+
+:global(a) {
+	color: var(--color-10);
+}
+
+:global(a:hover) {
+	color: color-mix(in srgb, var(--color-10) 75%, white);
+}
+
+:global(.surface-card) {
+	background-color: var(--color-surface);
+	color: var(--color-on-30);
+	box-shadow: 0 12px 32px rgb(15 23 42 / 3%);
+	border: 1px solid var(--color-outline);
+}
+
+:global(.surface-muted) {
+	background-color: color-mix(in srgb, var(--color-30) 55%, transparent);
+	color: var(--color-on-30);
+}
+
 /* Leaflet marker styling */
 :global(.weather-marker) {
 	transition: transform 0.2s ease;
