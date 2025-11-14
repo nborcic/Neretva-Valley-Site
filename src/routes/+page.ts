@@ -1,16 +1,4 @@
-import { createHash } from 'node:crypto';
-import { createTtlCache, type CacheHit } from '$lib/server/cache';
-import {
-	MET_FORECAST_CACHE_SECONDS,
-	MET_FORECAST_CACHE_TTL_MS,
-	MET_FORECAST_MAX_ATTEMPTS,
-	MET_FORECAST_TIMEOUT_MS,
-	MET_FORECAST_URL,
-	MET_FORECAST_USER_AGENT,
-	MET_FORECAST_CACHE_SWR_SECONDS
-} from '$lib/server/config';
-import { trackAsync } from '$lib/server/observability';
-import type { PageServerLoad } from './$types';
+import type { PageLoad } from './$types';
 
 type Timeseries = {
 	time: string;
@@ -22,7 +10,12 @@ type Timeseries = {
 		};
 	};
 };
+
 type MetResponse = { properties: { timeseries: Timeseries[] } };
+
+const MET_FORECAST_URL =
+	'https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=43.05&lon=17.6';
+const MET_FORECAST_TIMEOUT_MS = 7_000;
 
 const isFiniteNumber = (value: unknown): value is number =>
 	typeof value === 'number' && Number.isFinite(value);
@@ -112,139 +105,6 @@ const parseMetResponse = (raw: unknown): MetResponse => {
 	return { properties: { timeseries } };
 };
 
-const FORECAST_CACHE_KEY = 'met-forecast.neretva';
-
-const metForecastCache = createTtlCache<MetResponse>({ defaultTtlMs: MET_FORECAST_CACHE_TTL_MS });
-
-type ForecastFetchResult = {
-	payload: MetResponse;
-	etag?: string;
-	fromNetwork: boolean;
-	revalidated: boolean;
-	attempt: number;
-};
-
-async function fetchMetForecast(
-	fetchFn: typeof globalThis.fetch,
-	cached?: CacheHit<MetResponse>
-): Promise<ForecastFetchResult> {
-	return trackAsync(
-		'met.forecast.fetch',
-		async () => {
-			for (let attempt = 1; attempt <= MET_FORECAST_MAX_ATTEMPTS; attempt += 1) {
-				const controller = new AbortController();
-				const timeout = setTimeout(() => controller.abort(), MET_FORECAST_TIMEOUT_MS);
-
-				try {
-					const headers: Record<string, string> = {
-						'User-Agent': MET_FORECAST_USER_AGENT
-					};
-
-					if (cached?.etag) {
-						headers['If-None-Match'] = cached.etag;
-					}
-
-					const response = await fetchFn(MET_FORECAST_URL, {
-						signal: controller.signal,
-						headers
-					});
-
-					if (response.status === 304 && cached) {
-						return {
-							payload: cached.value,
-							etag: cached.etag,
-							fromNetwork: false,
-							revalidated: true,
-							attempt
-						};
-					}
-
-					if (!response.ok) {
-						throw new Error(`MET API responded with ${response.status}`);
-					}
-
-					const payload = await response.json();
-					return {
-						payload: parseMetResponse(payload),
-						etag: response.headers.get('etag') ?? undefined,
-						fromNetwork: true,
-						revalidated: Boolean(cached),
-						attempt
-					};
-				} catch (error) {
-					if (attempt === MET_FORECAST_MAX_ATTEMPTS) {
-						throw error;
-					}
-
-					await new Promise((resolve) => setTimeout(resolve, 100 * attempt));
-				} finally {
-					clearTimeout(timeout);
-				}
-			}
-
-			throw new Error('Failed to fetch MET forecast after retries');
-		},
-		{
-			cacheEtag: cached?.etag ?? null,
-			cacheStatus: cached ? (cached.isStale ? 'stale' : 'fresh') : 'miss'
-		}
-	);
-}
-
-const getCachedForecast = () => {
-	const cached = metForecastCache.get(FORECAST_CACHE_KEY);
-	if (!cached) return null;
-
-	const fetchedAt =
-		typeof cached.metadata?.fetchedAt === 'number' ? cached.metadata.fetchedAt : undefined;
-
-	return { cached, fetchedAt };
-};
-
-const getMetForecast = async (fetchFn: typeof globalThis.fetch) => {
-	const cachedResult = getCachedForecast();
-	const cached = cachedResult?.cached;
-	const fetchedAt = cachedResult?.fetchedAt;
-
-	if (cached && !cached.isStale) {
-		await trackAsync('met.forecast.cache.hit', async () => cached.value, {
-			cacheAgeMs: fetchedAt ? Date.now() - fetchedAt : null
-		});
-
-		return {
-			payload: cached.value,
-			etag: cached.etag,
-			servedFromCache: true,
-			cacheAgeMs: fetchedAt ? Date.now() - fetchedAt : 0,
-			revalidated: false
-		};
-	}
-
-	const result = await fetchMetForecast(fetchFn, cached ?? undefined);
-
-	const nextFetchedAt = Date.now();
-	metForecastCache.set(FORECAST_CACHE_KEY, result.payload, {
-		ttlMs: MET_FORECAST_CACHE_TTL_MS,
-		etag: result.etag,
-		metadata: { fetchedAt: nextFetchedAt }
-	});
-
-	const cacheAgeMs = result.fromNetwork && fetchedAt ? nextFetchedAt - fetchedAt : 0;
-
-	return {
-		payload: result.payload,
-		etag: result.etag,
-		servedFromCache: !result.fromNetwork,
-		cacheAgeMs,
-		revalidated: result.revalidated
-	};
-};
-
-const createResponseEtag = (payload: unknown) =>
-	createHash('sha256').update(JSON.stringify(payload)).digest('base64url').slice(0, 27);
-
-const toISO = (d: Date) => d.toISOString().slice(0, 10);
-
 function icon(symbol?: string | null): string {
 	if (!symbol) return '•';
 	if (symbol.includes('clearsky')) return symbol.includes('night') ? '🌙' : '☀️';
@@ -263,7 +123,7 @@ function pickSymbol(ts: Timeseries[], dayISO: string, hour: number) {
 	let best: Timeseries | null = null;
 	let bestDelta = 99;
 	for (const r of rows) {
-		const h = new Date(r.time).getHours(); // local hour
+		const h = new Date(r.time).getHours();
 		const d = Math.abs(h - hour);
 		if (d < bestDelta) {
 			bestDelta = d;
@@ -276,12 +136,55 @@ function pickSymbol(ts: Timeseries[], dayISO: string, hour: number) {
 	return alt?.data.next_1_hours?.summary?.symbol_code ?? 'clearsky_day';
 }
 
-export const load: PageServerLoad = async ({ fetch, setHeaders }) => {
-	try {
-		const { payload, servedFromCache, revalidated } = await getMetForecast(fetch);
-		const ts = payload.properties.timeseries;
+const toISO = (d: Date) => d.toISOString().slice(0, 10);
 
-		const byDay = new Map<string, { min: number; max: number; wind: number[]; precip: number[] }>();
+const fetchMetForecast = async (): Promise<MetResponse> => {
+	const controller = new AbortController();
+	const timeout = setTimeout(() => controller.abort(), MET_FORECAST_TIMEOUT_MS);
+
+	try {
+		const response = await fetch(MET_FORECAST_URL, {
+			signal: controller.signal,
+			headers: {
+				Accept: 'application/json'
+			}
+		});
+
+		if (!response.ok) {
+			throw new Error(`MET API responded with ${response.status}`);
+		}
+
+		const payload = await response.json();
+		return parseMetResponse(payload);
+	} finally {
+		clearTimeout(timeout);
+	}
+};
+
+export const ssr = false;
+
+type ForecastDay = {
+	date: string;
+	labelKey: string;
+	night: string;
+	morning: string;
+	afternoon: string;
+	evening: string;
+	hi: number;
+	lo: number;
+	precip: number;
+	wind: number;
+};
+
+export const load: PageLoad = async () => {
+	try {
+		const { properties } = await fetchMetForecast();
+		const ts = properties.timeseries;
+
+		const byDay = new Map<
+			string,
+			{ min: number; max: number; wind: number[]; precip: number[] }
+		>();
 		for (const t of ts) {
 			const d = toISO(new Date(t.time));
 			const temp = t.data.instant.details.air_temperature;
@@ -296,9 +199,9 @@ export const load: PageServerLoad = async ({ fetch, setHeaders }) => {
 		}
 
 		const today = toISO(new Date());
-		const tomorrow = toISO(new Date(Date.now() + 86400000));
+		const tomorrow = toISO(new Date(Date.now() + 86_400_000));
 
-		const makeDay = (dayISO: string, labelKey: string) => {
+		const makeDay = (dayISO: string, labelKey: string): ForecastDay | null => {
 			const s = byDay.get(dayISO);
 			if (!s) return null;
 			const precipTotal = Math.round(s.precip.reduce((a, b) => a + b, 0));
@@ -318,26 +221,15 @@ export const load: PageServerLoad = async ({ fetch, setHeaders }) => {
 			};
 		};
 
-		const days = [makeDay(today, 'forecast.today'), makeDay(tomorrow, 'forecast.tomorrow')].filter(
-			Boolean
-		);
-
-		const responseEtag = createResponseEtag(days);
-		const cacheStatus = servedFromCache ? (revalidated ? 'REVALIDATED' : 'HIT') : 'MISS';
-
-		// Align server response caching with our upstream TTL; edge/CDN can honour SWR.
-		setHeaders({
-			'Cache-Control': `public, max-age=${MET_FORECAST_CACHE_SECONDS}, stale-while-revalidate=${MET_FORECAST_CACHE_SWR_SECONDS}`,
-			ETag: responseEtag,
-			'X-Cache-Status': cacheStatus
-		});
+		const days = [
+			makeDay(today, 'forecast.today'),
+			makeDay(tomorrow, 'forecast.tomorrow')
+		].filter((day): day is ForecastDay => Boolean(day));
 
 		return { days };
 	} catch (error) {
 		console.error('Failed to load MET forecast', error);
-		setHeaders({
-			'Cache-Control': 'no-store'
-		});
 		return { days: [] };
 	}
 };
+

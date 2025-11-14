@@ -48,14 +48,14 @@
 		<div class="grid grid-cols-1 gap-8 lg:grid-cols-2"></div>
 		<!-- Forecast Table Section -->
 		<section class="mb-8 overflow-hidden rounded-xl bg-white shadow-lg">
-			<div class="px-6 py-4" style="background: linear-gradient(90deg, #5a9fd4 0%, #4a8bc2 100%);">
-				<h2 class="flex items-center text-xl font-semibold text-white">
+			<div class="bg-[var(--color-30)] px-6 py-4 text-[var(--color-on-30)]">
+				<h2 class="flex items-center text-xl font-semibold">
 					🌤️ {$t('main.forecast.title')}
 				</h2>
 			</div>
 			<div class="overflow-x-auto">
 				<table class="w-full border-collapse">
-					<thead class="bg-gray-50">
+					<thead class="bg-[var(--color-30)] text-[var(--color-on-30)]">
 						<tr>
 							<th class="px-4 py-3 text-left text-sm font-semibold text-gray-900">
 								{$t('forecast.date')}
@@ -114,17 +114,14 @@
 			</div>
 		</section>
 
-		<section class="mb-8 overflow-hidden rounded-xl bg-white shadow-lg">
+		<div class="mb-8 space-y-8">
 			<!-- Weather Map Section -->
-			<section class="mb-8 overflow-hidden rounded-xl bg-white shadow-lg">
-				<div
-					class="px-6 py-4"
-					style="background: linear-gradient(90deg, #87CEEB 0%, #6BB6FF 100%);"
-				>
-					<h2 class="flex items-center text-xl font-semibold text-white">
+			<section class="overflow-hidden rounded-xl bg-white shadow-lg">
+				<div class="bg-[var(--color-30)] px-6 py-4 text-[var(--color-on-30)]">
+					<h2 class="flex items-center text-xl font-semibold">
 						{$t('main.map.title')}
 					</h2>
-					<p class="mt-1 text-sm text-blue-100">
+					<p class="mt-1 text-sm">
 						{$t('main.map.description')}
 					</p>
 				</div>
@@ -134,17 +131,14 @@
 			</section>
 
 			<!-- External Weather Sources Section -->
-			<section class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+			<section class="m-2 grid grid-cols-1 gap-8 lg:grid-cols-2">
 				<!-- YR Weather Card -->
 				<div class="overflow-hidden rounded-xl bg-white shadow-lg">
-					<div
-						class="px-6 py-4"
-						style="background: linear-gradient(90deg, #5a9fd4 0%, #4a8bc2 100%);"
-					>
-						<h3 class="flex items-center text-lg font-semibold text-white">
+					<div class="bg-[var(--color-30)] px-6 py-4 text-[var(--color-on-30)]">
+						<h3 class="flex items-center text-lg font-semibold">
 							🔗 {$t('main.sources.yr.title')}
 						</h3>
-						<p class="mt-1 text-sm text-blue-100">
+						<p class="mt-1 text-sm">
 							{$t('main.sources.yr.description')}
 						</p>
 					</div>
@@ -159,16 +153,12 @@
 				</div>
 
 				<!-- Meteogram -->
-				<!-- Meteogram -->
 				<div class="overflow-hidden rounded-xl bg-white shadow-lg">
-					<div
-						class="px-6 py-4"
-						style="background: linear-gradient(90deg, #5a9fd4 0%, #4a8bc2 100%);"
-					>
-						<h3 class="flex items-center text-lg font-semibold text-white">
+					<div class="bg-[var(--color-30)] px-6 py-4 text-[var(--color-on-30)]">
+						<h3 class="flex items-center text-lg font-semibold">
 							📊 {$t('main.sources.meteogram.title')}
 						</h3>
-						<p class="mt-1 text-sm text-blue-100">{$t('main.sources.meteogram.description')}</p>
+						<p class="mt-1 text-sm">{$t('main.sources.meteogram.description')}</p>
 					</div>
 					<div class="p-6">
 						<div class="relative w-full" style="aspect-ratio: 16/9; max-height: 500px;">
@@ -186,7 +176,7 @@
 					</div>
 				</div>
 			</section>
-		</section>
+		</div>
 	</main>
 </div>
 

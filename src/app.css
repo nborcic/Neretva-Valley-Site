@@ -1,37 +1,73 @@
 @import 'tailwindcss';
 
-/* 60-30-10 palette definitions */
+/* Brand palette built around 60-30-10 balance */
 :root,
 :root[data-theme='light'] {
+	/* 60% background base — warm paper */
 	--color-60: #f3efe7;
+	/* 30% secondary surfaces — muted clay */
 	--color-30: #e0d8cc;
+	/* 10% accent — amber highlight */
 	--color-10: #c9781d;
 
+	/* Text on base */
 	--color-on-60: #1b1a17;
-	--color-on-30: #1f2933;
+	/* Text on secondary surfaces */
+	--color-on-30: #2b2118;
+	/* Text on accent */
 	--color-on-10: #ffffff;
 
+	/* Elevated cards */
 	--color-surface: #ffffff;
+	/* Subtle separators */
 	--color-outline: rgba(27, 26, 23, 0.12);
 }
 
 :root[data-theme='dark'] {
+	/* 60% background base — deep navy */
 	--color-60: #0d1b2a;
-	--color-30: #1b263b;
+	/* 30% secondary surfaces — steel blue */
+	--color-30: #152238;
+	/* 10% accent — golden highlight */
 	--color-10: #f0b429;
 
+	/* Text on base and secondary surfaces */
 	--color-on-60: #e1e8f0;
 	--color-on-30: #e1e8f0;
+	/* Text on accent */
 	--color-on-10: #0d1b2a;
 
+	/* Elevated cards */
 	--color-surface: #152238;
+	/* Subtle separators */
 	--color-outline: rgba(225, 232, 240, 0.16);
+}
+
+/* Accent utilities shared across components */
+:global(.accent-band) {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--color-10) 92%, transparent) 0%,
+		color-mix(in srgb, var(--color-10) 70%, var(--color-surface)) 100%
+	);
+	color: var(--color-on-10);
+}
+
+:global(.accent-chip) {
+	background-color: color-mix(in srgb, var(--color-10) 35%, transparent);
+	color: var(--color-10);
+}
+
+:global(.accent-divider) {
+	border-color: color-mix(in srgb, var(--color-10) 40%, transparent);
 }
 
 :global(body) {
 	background-color: var(--color-60);
 	color: var(--color-on-60);
-	transition: background-color 180ms ease, color 180ms ease;
+	transition:
+		background-color 180ms ease,
+		color 180ms ease;
 }
 
 :global(a) {
